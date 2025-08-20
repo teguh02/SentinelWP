@@ -1,0 +1,2 @@
+{"ip":"192.168.1.100","attack_type":"test_attack","payload":"Test intrusion attempt for debugging","user_agent":"Test User Agent","time":"2025-08-20 15:00:00","timestamp":1724156400}
+{"ip":"10.0.0.50","attack_type":"sql_injection","payload":"Attempted SQL injection in contact form","user_agent":"Mozilla/5.0 Test","time":"2025-08-20 14:30:00","timestamp":1724154600}

@@ -1,5 +1,0 @@
-[2025-08-20 04:29:04] [HIGH] Brute force attack detected: 11 failed login attempts in 1 minute | IP: 127.0.0.1 | Type: brute_force
-[2025-08-20 04:29:04] [HIGH] Brute force attack detected: 12 failed login attempts in 1 minute | IP: 127.0.0.1 | Type: brute_force
-[2025-08-20 04:29:05] [HIGH] Brute force attack detected: 13 failed login attempts in 1 minute | IP: 127.0.0.1 | Type: brute_force
-[2025-08-20 04:29:06] [HIGH] Brute force attack detected: 14 failed login attempts in 1 minute | IP: 127.0.0.1 | Type: brute_force
-[2025-08-20 04:29:07] [HIGH] Brute force attack detected: 15 failed login attempts in 1 minute | IP: 127.0.0.1 | Type: brute_force

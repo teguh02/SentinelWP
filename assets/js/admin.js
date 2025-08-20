@@ -887,6 +887,20 @@
             var button = $(this);
             button.prop('disabled', true).text('Unblocking...');
             
+            // Get the correct nonce from the form
+            var nonce = $('input[name="sentinelwp_ids_ips_nonce"]').val();
+            
+            // Fallback to global nonce if form nonce not available
+            if (!nonce) {
+                nonce = sentinelwp_ajax.nonce;
+                console.warn('SentinelWP: Using fallback nonce for unblock IP');
+            }
+            
+            console.log('SentinelWP: Unblocking IP', {
+                ip: ip,
+                nonce: nonce ? 'present' : 'missing'
+            });
+            
             $.ajax({
                 url: sentinelwp_ajax.ajax_url,
                 type: 'POST',
@@ -894,9 +908,11 @@
                 data: {
                     action: 'sentinelwp_unblock_ip',
                     ip: ip,
-                    nonce: sentinelwp_ajax.nonce
+                    nonce: nonce
                 },
                 success: function(response) {
+                    console.log('SentinelWP: Unblock IP response', response);
+                    
                     if (response.success) {
                         button.closest('tr').fadeOut(400, function() {
                             $(this).remove();
@@ -905,12 +921,27 @@
                             }
                         });
                     } else {
-                        alert('Failed to unblock IP: ' + response.data);
+                        console.error('SentinelWP: Unblock IP failed', response.data);
+                        alert('Failed to unblock IP: ' + (response.data || 'Unknown error'));
                         button.prop('disabled', false).text('Unblock');
                     }
                 },
-                error: function() {
-                    alert('Error communicating with server');
+                error: function(xhr, status, error) {
+                    console.error('SentinelWP: AJAX error unblocking IP', {
+                        status: status,
+                        error: error,
+                        responseText: xhr.responseText,
+                        statusCode: xhr.status
+                    });
+                    
+                    var errorMessage = 'Error communicating with server';
+                    if (xhr.responseJSON && xhr.responseJSON.data) {
+                        errorMessage += ': ' + xhr.responseJSON.data;
+                    } else if (xhr.responseText) {
+                        errorMessage += ': ' + xhr.responseText;
+                    }
+                    
+                    alert(errorMessage);
                     button.prop('disabled', false).text('Unblock');
                 }
             });
@@ -926,13 +957,16 @@
             var button = $(this);
             button.prop('disabled', true).text('Clearing...');
             
+            // Get the correct nonce from the form
+            var nonce = $('input[name="sentinelwp_ids_ips_nonce"]').val();
+            
             $.ajax({
                 url: sentinelwp_ajax.ajax_url,
                 type: 'POST',
                 dataType: 'json',
                 data: {
                     action: 'sentinelwp_clear_ids_logs',
-                    nonce: sentinelwp_ajax.nonce
+                    nonce: nonce
                 },
                 success: function(response) {
                     if (response.success) {
@@ -956,13 +990,16 @@
             var button = $(this);
             button.prop('disabled', true).text('Refreshing...');
             
+            // Get the correct nonce from the form
+            var nonce = $('input[name="sentinelwp_ids_ips_nonce"]').val();
+            
             $.ajax({
                 url: sentinelwp_ajax.ajax_url,
                 type: 'POST',
                 dataType: 'json',
                 data: {
                     action: 'sentinelwp_get_blocked_ips',
-                    nonce: sentinelwp_ajax.nonce
+                    nonce: nonce
                 },
                 success: function(response) {
                     if (response.success) {

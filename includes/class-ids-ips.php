@@ -31,8 +31,19 @@ class SentinelWP_IDS_IPS {
      */
     public function __construct() {
         $this->log_file = SENTINELWP_PLUGIN_PATH . 'logs/sentinelwp-ids.log';
+        
+        // Add comprehensive logging for initialization
+        if (class_exists('SentinelWP_Logger')) {
+            SentinelWP_Logger::info('IDS/IPS system initializing', array(
+                'log_file' => $this->log_file,
+                'log_file_exists' => file_exists($this->log_file),
+                'log_dir_writable' => is_writable(dirname($this->log_file))
+            ));
+        }
+        
         $this->init_hooks();
         $this->ensure_log_directory();
+        $this->check_database_tables();
     }
     
     /**
@@ -71,6 +82,47 @@ class SentinelWP_IDS_IPS {
         $index_file = $log_dir . '/index.php';
         if (!file_exists($index_file)) {
             file_put_contents($index_file, '<?php // Silence is golden');
+        }
+    }
+    
+    /**
+     * Check database tables for logging and monitoring
+     */
+    private function check_database_tables() {
+        try {
+            global $wpdb;
+            
+            if (class_exists('SentinelWP_Logger')) {
+                SentinelWP_Logger::debug('Checking database tables for IDS/IPS system');
+            }
+            
+            // Check if notifications table exists
+            $notifications_table = $wpdb->prefix . 'sentinelwp_notifications';
+            $table_exists = $wpdb->get_var("SHOW TABLES LIKE '$notifications_table'") == $notifications_table;
+            
+            if (class_exists('SentinelWP_Logger')) {
+                SentinelWP_Logger::debug('Database table check', array(
+                    'notifications_table' => $notifications_table,
+                    'exists' => $table_exists,
+                    'wpdb_ready' => !empty($wpdb)
+                ));
+            }
+            
+            if (!$table_exists) {
+                if (class_exists('SentinelWP_Logger')) {
+                    SentinelWP_Logger::warning('Notifications table does not exist', array(
+                        'table_name' => $notifications_table
+                    ));
+                }
+            }
+            
+        } catch (Exception $e) {
+            if (class_exists('SentinelWP_Logger')) {
+                SentinelWP_Logger::error('Database table check failed', array(
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ));
+            }
         }
     }
     
@@ -413,52 +465,161 @@ class SentinelWP_IDS_IPS {
      * Get intrusion logs
      */
     public function get_intrusion_logs($limit = 100) {
-        if (!file_exists($this->log_file)) {
-            return array();
-        }
-        
-        $logs = array();
-        $file_lines = file($this->log_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-        
-        if ($file_lines) {
-            // Get last N lines
-            $lines = array_slice($file_lines, -$limit);
-            $lines = array_reverse($lines);
+        try {
+            if (class_exists('SentinelWP_Logger')) {
+                SentinelWP_Logger::debug('Starting get_intrusion_logs', array(
+                    'log_file' => $this->log_file,
+                    'limit' => $limit,
+                    'file_exists' => file_exists($this->log_file)
+                ));
+            }
             
-            foreach ($lines as $line) {
-                $decoded = json_decode($line, true);
-                if ($decoded) {
-                    $logs[] = $decoded;
+            if (!file_exists($this->log_file)) {
+                if (class_exists('SentinelWP_Logger')) {
+                    SentinelWP_Logger::warning('Intrusion log file does not exist', array(
+                        'log_file' => $this->log_file
+                    ));
+                }
+                return array();
+            }
+            
+            $file_size = filesize($this->log_file);
+            if (class_exists('SentinelWP_Logger')) {
+                SentinelWP_Logger::debug('Intrusion log file info', array(
+                    'file_size' => $file_size,
+                    'readable' => is_readable($this->log_file)
+                ));
+            }
+            
+            $logs = array();
+            $file_lines = file($this->log_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+            
+            if ($file_lines === false) {
+                if (class_exists('SentinelWP_Logger')) {
+                    SentinelWP_Logger::error('Failed to read intrusion log file', array(
+                        'log_file' => $this->log_file,
+                        'last_error' => error_get_last()
+                    ));
+                }
+                return array();
+            }
+            
+            if (class_exists('SentinelWP_Logger')) {
+                SentinelWP_Logger::debug('Read intrusion log file', array(
+                    'total_lines' => count($file_lines),
+                    'requested_limit' => $limit
+                ));
+            }
+            
+            if ($file_lines) {
+                // Get last N lines
+                $lines = array_slice($file_lines, -$limit);
+                $lines = array_reverse($lines);
+                
+                foreach ($lines as $line_num => $line) {
+                    $decoded = json_decode($line, true);
+                    if ($decoded) {
+                        $logs[] = $decoded;
+                    } else {
+                        if (class_exists('SentinelWP_Logger')) {
+                            SentinelWP_Logger::debug('Failed to decode log line', array(
+                                'line_num' => $line_num,
+                                'line_preview' => substr($line, 0, 100),
+                                'json_error' => json_last_error_msg()
+                            ));
+                        }
+                    }
                 }
             }
+            
+            if (class_exists('SentinelWP_Logger')) {
+                SentinelWP_Logger::info('Successfully retrieved intrusion logs', array(
+                    'total_logs' => count($logs)
+                ));
+            }
+            
+            return $logs;
+            
+        } catch (Exception $e) {
+            if (class_exists('SentinelWP_Logger')) {
+                SentinelWP_Logger::error('Exception in get_intrusion_logs', array(
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ));
+            }
+            return array();
         }
-        
-        return $logs;
     }
     
     /**
      * Get currently blocked IPs
      */
     public function get_blocked_ips() {
-        global $wpdb;
-        
-        $blocked_ips = array();
-        $transient_prefix = '_transient_sentinelwp_blocked_ip_';
-        
-        $results = $wpdb->get_results($wpdb->prepare(
-            "SELECT option_name, option_value FROM {$wpdb->options} 
-             WHERE option_name LIKE %s",
-            $transient_prefix . '%'
-        ));
-        
-        foreach ($results as $result) {
-            $data = maybe_unserialize($result->option_value);
-            if (is_array($data) && isset($data['ip'])) {
-                $blocked_ips[] = $data;
+        try {
+            global $wpdb;
+            
+            if (class_exists('SentinelWP_Logger')) {
+                SentinelWP_Logger::debug('Starting get_blocked_ips operation', array(
+                    'wpdb_available' => !empty($wpdb)
+                ));
             }
+            
+            $blocked_ips = array();
+            $transient_prefix = '_transient_sentinelwp_blocked_ip_';
+            
+            if (class_exists('SentinelWP_Logger')) {
+                SentinelWP_Logger::debug('Preparing database query', array(
+                    'table' => $wpdb->options,
+                    'prefix' => $transient_prefix
+                ));
+            }
+            
+            $results = $wpdb->get_results($wpdb->prepare(
+                "SELECT option_name, option_value FROM {$wpdb->options} 
+                 WHERE option_name LIKE %s",
+                $transient_prefix . '%'
+            ));
+            
+            if (class_exists('SentinelWP_Logger')) {
+                SentinelWP_Logger::debug('Database query completed', array(
+                    'results_count' => count($results),
+                    'wpdb_last_error' => $wpdb->last_error
+                ));
+            }
+            
+            foreach ($results as $result) {
+                try {
+                    $data = maybe_unserialize($result->option_value);
+                    if (is_array($data) && isset($data['ip'])) {
+                        $blocked_ips[] = $data;
+                    }
+                } catch (Exception $e) {
+                    if (class_exists('SentinelWP_Logger')) {
+                        SentinelWP_Logger::warning('Failed to unserialize blocked IP data', array(
+                            'option_name' => $result->option_name,
+                            'error' => $e->getMessage()
+                        ));
+                    }
+                }
+            }
+            
+            if (class_exists('SentinelWP_Logger')) {
+                SentinelWP_Logger::info('Successfully retrieved blocked IPs', array(
+                    'total_blocked_ips' => count($blocked_ips)
+                ));
+            }
+            
+            return $blocked_ips;
+            
+        } catch (Exception $e) {
+            if (class_exists('SentinelWP_Logger')) {
+                SentinelWP_Logger::error('Exception in get_blocked_ips', array(
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ));
+            }
+            return array();
         }
-        
-        return $blocked_ips;
     }
     
     /**

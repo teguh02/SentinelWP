@@ -44,6 +44,8 @@ class SentinelWP_Dashboard {
         add_action('wp_ajax_sentinelwp_test_telegram', array($this, 'ajax_test_telegram'));
         add_action('wp_ajax_sentinelwp_mark_notification_read', array($this, 'ajax_mark_notification_read'));
         add_action('wp_ajax_sentinelwp_delete_notification', array($this, 'ajax_delete_notification'));
+        add_action('wp_ajax_sentinelwp_unblock_ip', array($this, 'ajax_unblock_ip'));
+        add_action('wp_ajax_sentinelwp_clear_logs', array($this, 'ajax_clear_logs'));
     }
     
     /**
@@ -2633,9 +2635,54 @@ class SentinelWP_Dashboard {
      * Render IDS/IPS page
      */
     public static function render_ids_ips() {
-        $ids_ips = SentinelWP_IDS_IPS::instance();
-        $intrusion_logs = $ids_ips->get_intrusion_logs(50);
-        $blocked_ips = $ids_ips->get_blocked_ips();
+        try {
+            $ids_ips = SentinelWP_IDS_IPS::instance();
+            
+            // Add comprehensive logging for dashboard rendering
+            if (class_exists('SentinelWP_Logger')) {
+                SentinelWP_Logger::debug('Starting IDS/IPS dashboard render', array(
+                    'ids_ips_instance' => !empty($ids_ips)
+                ));
+            }
+            
+            $intrusion_logs = array();
+            $blocked_ips = array();
+            
+            // Safely get intrusion logs
+            try {
+                $intrusion_logs = $ids_ips->get_intrusion_logs(50);
+                if (class_exists('SentinelWP_Logger')) {
+                    SentinelWP_Logger::debug('Retrieved intrusion logs for dashboard', array(
+                        'logs_count' => count($intrusion_logs)
+                    ));
+                }
+            } catch (Exception $e) {
+                if (class_exists('SentinelWP_Logger')) {
+                    SentinelWP_Logger::error('Failed to get intrusion logs for dashboard', array(
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString()
+                    ));
+                }
+                $intrusion_logs = array();
+            }
+            
+            // Safely get blocked IPs
+            try {
+                $blocked_ips = $ids_ips->get_blocked_ips();
+                if (class_exists('SentinelWP_Logger')) {
+                    SentinelWP_Logger::debug('Retrieved blocked IPs for dashboard', array(
+                        'blocked_count' => count($blocked_ips)
+                    ));
+                }
+            } catch (Exception $e) {
+                if (class_exists('SentinelWP_Logger')) {
+                    SentinelWP_Logger::error('Failed to get blocked IPs for dashboard', array(
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString()
+                    ));
+                }
+                $blocked_ips = array();
+            }
         
         // Handle form submissions
         if (isset($_POST['action'])) {
@@ -2779,7 +2826,29 @@ class SentinelWP_Dashboard {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <?php foreach ($intrusion_logs as $log): ?>
+                                            <?php 
+                                            try {
+                                                foreach ($intrusion_logs as $index => $log): 
+                                                    // Validate log entry structure
+                                                    if (!is_array($log)) {
+                                                        if (class_exists('SentinelWP_Logger')) {
+                                                            SentinelWP_Logger::warning('Invalid log entry found', array(
+                                                                'index' => $index,
+                                                                'type' => gettype($log)
+                                                            ));
+                                                        }
+                                                        continue;
+                                                    }
+                                                    
+                                                    // Set defaults for missing fields
+                                                    $log = array_merge(array(
+                                                        'time' => 'Unknown',
+                                                        'ip' => 'Unknown',
+                                                        'attack_type' => 'unknown',
+                                                        'payload' => 'No details available',
+                                                        'user_agent' => 'Unknown'
+                                                    ), $log);
+                                            ?>
                                                 <tr>
                                                     <td><?php echo esc_html($log['time']); ?></td>
                                                     <td><code><?php echo esc_html($log['ip']); ?></code></td>
@@ -2795,7 +2864,19 @@ class SentinelWP_Dashboard {
                                                         <?php echo esc_html(strlen($log['user_agent']) > 30 ? substr($log['user_agent'], 0, 30) . '...' : $log['user_agent']); ?>
                                                     </td>
                                                 </tr>
-                                            <?php endforeach; ?>
+                                            <?php 
+                                                endforeach; 
+                                            } catch (Exception $e) {
+                                                if (class_exists('SentinelWP_Logger')) {
+                                                    SentinelWP_Logger::error('Error rendering intrusion logs table', array(
+                                                        'error' => $e->getMessage(),
+                                                        'trace' => $e->getTraceAsString(),
+                                                        'logs_count' => count($intrusion_logs)
+                                                    ));
+                                                }
+                                                echo '<tr><td colspan="5">Error displaying logs. Check error logs for details.</td></tr>';
+                                            }
+                                            ?>
                                         </tbody>
                                     </table>
                                 </div>
@@ -2861,7 +2942,213 @@ class SentinelWP_Dashboard {
         .intrusion-logs-table table {
             margin-top: 10px;
         }
+        .sentinelwp-dashboard {
+            margin-top: 20px;
+        }
+        .sentinelwp-row {
+            display: flex;
+            margin-bottom: 20px;
+            gap: 20px;
+        }
+        .sentinelwp-col-6 {
+            flex: 1;
+        }
+        .sentinelwp-col-12 {
+            width: 100%;
+        }
+        .sentinelwp-card {
+            background: #fff;
+            border: 1px solid #ccd0d4;
+            box-shadow: 0 1px 1px rgba(0,0,0,.04);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .sentinelwp-card h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        @media (max-width: 782px) {
+            .sentinelwp-row {
+                flex-direction: column;
+            }
+        }
         </style>
+        
+        <script type="text/javascript">
+        jQuery(document).ready(function($) {
+            // Handle unblock IP via AJAX
+            $('.unblock-ip-btn').click(function(e) {
+                e.preventDefault();
+                
+                if (!confirm('<?php echo esc_js(__("Are you sure you want to unblock this IP?", "sentinelwp")); ?>')) {
+                    return false;
+                }
+                
+                var $btn = $(this);
+                var ip = $btn.data('ip');
+                var $row = $btn.closest('tr');
+                
+                $btn.prop('disabled', true).text('<?php echo esc_js(__("Unblocking...", "sentinelwp")); ?>');
+                
+                $.ajax({
+                    url: sentinelwp_ajax.ajax_url,
+                    type: 'POST',
+                    data: {
+                        action: 'sentinelwp_unblock_ip',
+                        ip: ip,
+                        nonce: sentinelwp_ajax.nonce
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            $row.fadeOut(300, function() {
+                                $(this).remove();
+                                
+                                // Check if table is empty
+                                var remainingRows = $('.blocked-ips-table tbody tr').length;
+                                if (remainingRows === 0) {
+                                    $('.blocked-ips-table').replaceWith('<p><?php echo esc_js(__("No IP addresses are currently blocked.", "sentinelwp")); ?></p>');
+                                }
+                            });
+                        } else {
+                            alert('<?php echo esc_js(__("Failed to unblock IP:", "sentinelwp")); ?> ' + (response.data || 'Unknown error'));
+                            $btn.prop('disabled', false).text('<?php echo esc_js(__("Unblock", "sentinelwp")); ?>');
+                        }
+                    },
+                    error: function() {
+                        alert('<?php echo esc_js(__("An error occurred while unblocking the IP.", "sentinelwp")); ?>');
+                        $btn.prop('disabled', false).text('<?php echo esc_js(__("Unblock", "sentinelwp")); ?>');
+                    }
+                });
+            });
+            
+            // Handle clear logs via AJAX
+            $('.clear-logs-btn').click(function(e) {
+                e.preventDefault();
+                
+                if (!confirm('<?php echo esc_js(__("Are you sure you want to clear all intrusion logs?", "sentinelwp")); ?>')) {
+                    return false;
+                }
+                
+                var $btn = $(this);
+                
+                $btn.prop('disabled', true).text('<?php echo esc_js(__("Clearing...", "sentinelwp")); ?>');
+                
+                $.ajax({
+                    url: sentinelwp_ajax.ajax_url,
+                    type: 'POST',
+                    data: {
+                        action: 'sentinelwp_clear_logs',
+                        nonce: sentinelwp_ajax.nonce
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            $('.intrusion-logs-table').replaceWith('<p><?php echo esc_js(__("No intrusion attempts recorded yet.", "sentinelwp")); ?></p>');
+                        } else {
+                            alert('<?php echo esc_js(__("Failed to clear logs:", "sentinelwp")); ?> ' + (response.data || 'Unknown error'));
+                        }
+                    },
+                    error: function() {
+                        alert('<?php echo esc_js(__("An error occurred while clearing logs.", "sentinelwp")); ?>');
+                    },
+                    complete: function() {
+                        $btn.prop('disabled', false).text('<?php echo esc_js(__("Clear Logs", "sentinelwp")); ?>');
+                    }
+                });
+            });
+        });
+        </script>
         <?php
+        
+        } catch (Exception $e) {
+            // Error handling for dashboard rendering
+            if (class_exists('SentinelWP_Logger')) {
+                SentinelWP_Logger::error('Critical error in IDS/IPS dashboard rendering', array(
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine()
+                ));
+            }
+            
+            echo '<div class="wrap">';
+            echo '<h1>' . esc_html__('IDS/IPS Security Monitor', 'sentinelwp') . '</h1>';
+            echo '<div class="notice notice-error">';
+            echo '<p>' . esc_html__('An error occurred while loading the IDS/IPS dashboard. Please check the error logs for details.', 'sentinelwp') . '</p>';
+            if (current_user_can('manage_options')) {
+                echo '<p><strong>' . esc_html__('Error Details:', 'sentinelwp') . '</strong> ' . esc_html($e->getMessage()) . '</p>';
+            }
+            echo '</div>';
+            echo '</div>';
+        }
+    }
+    
+    /**
+     * AJAX handler for unblocking IP addresses
+     */
+    public function ajax_unblock_ip() {
+        check_ajax_referer('sentinelwp_nonce', 'nonce');
+        
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error('Insufficient permissions');
+        }
+        
+        $ip = sanitize_text_field($_POST['ip'] ?? '');
+        
+        if (empty($ip)) {
+            wp_send_json_error('Invalid IP address');
+        }
+        
+        try {
+            $ids_ips = SentinelWP_IDS_IPS::instance();
+            $result = $ids_ips->unblock_ip($ip);
+            
+            if ($result) {
+                SentinelWP_Logger::info('IP unblocked via AJAX', array(
+                    'ip' => $ip,
+                    'user_id' => get_current_user_id()
+                ));
+                wp_send_json_success('IP address unblocked successfully');
+            } else {
+                wp_send_json_error('Failed to unblock IP address');
+            }
+        } catch (Exception $e) {
+            SentinelWP_Logger::error('Error unblocking IP via AJAX', array(
+                'ip' => $ip,
+                'error' => $e->getMessage()
+            ));
+            wp_send_json_error('Error: ' . $e->getMessage());
+        }
+    }
+    
+    /**
+     * AJAX handler for clearing intrusion logs
+     */
+    public function ajax_clear_logs() {
+        check_ajax_referer('sentinelwp_nonce', 'nonce');
+        
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error('Insufficient permissions');
+        }
+        
+        try {
+            $ids_ips = SentinelWP_IDS_IPS::instance();
+            $result = $ids_ips->clear_logs();
+            
+            if ($result) {
+                SentinelWP_Logger::info('Intrusion logs cleared via AJAX', array(
+                    'user_id' => get_current_user_id()
+                ));
+                wp_send_json_success('Intrusion logs cleared successfully');
+            } else {
+                wp_send_json_error('Failed to clear intrusion logs');
+            }
+        } catch (Exception $e) {
+            SentinelWP_Logger::error('Error clearing logs via AJAX', array(
+                'error' => $e->getMessage()
+            ));
+            wp_send_json_error('Error: ' . $e->getMessage());
+        }
     }
 }
