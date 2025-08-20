@@ -708,6 +708,7 @@ class SentinelWP_Dashboard {
             
             <form id="sentinelwp-settings-form" method="post">
                 <?php wp_nonce_field('sentinelwp_settings'); ?>
+                <input type="hidden" name="current_tab" value="<?php echo esc_attr($current_tab); ?>" />
                 
                 <?php if ($current_tab == 'general'): ?>
                 <div class="tab-content">
@@ -966,6 +967,9 @@ class SentinelWP_Dashboard {
                 var $form = $(this);
                 var $btn = $('#save-settings-btn');
                 
+                // Clear any existing notices
+                $('.notice').remove();
+                
                 $btn.prop('disabled', true).text('<?php _e('Saving...', 'sentinelwp'); ?>');
                 
                 $.ajax({
@@ -975,6 +979,11 @@ class SentinelWP_Dashboard {
                     success: function(response) {
                         if (response.success) {
                             $('<div class="notice notice-success is-dismissible"><p><?php _e('Settings saved successfully!', 'sentinelwp'); ?></p></div>').insertAfter('.nav-tab-wrapper');
+                            
+                            // Auto-dismiss success message after 3 seconds
+                            setTimeout(function() {
+                                $('.notice-success').fadeOut();
+                            }, 3000);
                         } else {
                             $('<div class="notice notice-error is-dismissible"><p><?php _e('Failed to save settings:', 'sentinelwp'); ?> ' + response.data + '</p></div>').insertAfter('.nav-tab-wrapper');
                         }
@@ -1255,27 +1264,58 @@ class SentinelWP_Dashboard {
             wp_send_json_error('Insufficient permissions');
         }
         
-        $settings = array(
-            'sentinelwp_auto_scan_enabled' => isset($_POST['auto_scan_enabled']) ? 1 : 0,
-            'sentinelwp_scan_time' => sanitize_text_field($_POST['scan_time'] ?? '02:00'),
-            'sentinelwp_notify_scan_results' => isset($_POST['notify_scan_results']) ? 1 : 0,
-            'sentinelwp_notify_threats' => isset($_POST['notify_threats']) ? 1 : 0,
-            'sentinelwp_notify_under_attack' => isset($_POST['notify_under_attack']) ? 1 : 0,
-            'sentinelwp_notification_email' => sanitize_email($_POST['notification_email'] ?? ''),
-            'sentinelwp_telegram_enabled' => isset($_POST['telegram_enabled']) ? 1 : 0,
-            'sentinelwp_telegram_bot_token' => sanitize_text_field($_POST['telegram_bot_token'] ?? ''),
-            'sentinelwp_telegram_chat_id' => sanitize_text_field($_POST['telegram_chat_id'] ?? ''),
-            'sentinelwp_gemini_enabled' => isset($_POST['gemini_enabled']) ? 1 : 0,
-            'sentinelwp_gemini_api_key' => sanitize_text_field($_POST['gemini_api_key'] ?? ''),
-            'sentinelwp_gemini_model' => sanitize_text_field($_POST['gemini_model'] ?? 'gemini-2.5-flash')
-        );
+        $current_tab = sanitize_text_field($_POST['current_tab'] ?? 'general');
+        $settings = array();
         
+        // Log the incoming request for debugging
+        SentinelWP_Logger::debug('Settings save request received', array(
+            'tab' => $current_tab,
+            'posted_fields' => array_keys($_POST)
+        ));
+        
+        // Only save settings for the current tab
+        if ($current_tab === 'general') {
+            $settings = array(
+                'sentinelwp_auto_scan_enabled' => isset($_POST['auto_scan_enabled']) ? 1 : 0,
+                'sentinelwp_scan_time' => sanitize_text_field($_POST['scan_time'] ?? '02:00'),
+            );
+        } elseif ($current_tab === 'notifications') {
+            $settings = array(
+                'sentinelwp_notify_scan_results' => isset($_POST['notify_scan_results']) ? 1 : 0,
+                'sentinelwp_notify_threats' => isset($_POST['notify_threats']) ? 1 : 0,
+                'sentinelwp_notify_under_attack' => isset($_POST['notify_under_attack']) ? 1 : 0,
+                'sentinelwp_notification_email' => sanitize_email($_POST['notification_email'] ?? ''),
+                'sentinelwp_telegram_enabled' => isset($_POST['telegram_enabled']) ? 1 : 0,
+                'sentinelwp_telegram_bot_token' => sanitize_text_field($_POST['telegram_bot_token'] ?? ''),
+                'sentinelwp_telegram_chat_id' => sanitize_text_field($_POST['telegram_chat_id'] ?? ''),
+            );
+        } elseif ($current_tab === 'gemini') {
+            $settings = array(
+                'sentinelwp_gemini_enabled' => isset($_POST['gemini_enabled']) ? 1 : 0,
+                'sentinelwp_gemini_api_key' => sanitize_text_field($_POST['gemini_api_key'] ?? ''),
+                'sentinelwp_gemini_model' => sanitize_text_field($_POST['gemini_model'] ?? 'gemini-2.5-flash')
+            );
+        }
+        
+        // Validate that we have settings to save
+        if (empty($settings)) {
+            wp_send_json_error('No settings found for tab: ' . $current_tab);
+        }
+        
+        // Save the settings for the current tab
         foreach ($settings as $key => $value) {
             update_option($key, $value);
         }
         
-        // Reschedule cron if time changed
-        wp_clear_scheduled_hook('sentinelwp_scheduled_scan');
+        // Log which settings were saved for debugging
+        SentinelWP_Logger::info('Settings saved for tab: ' . $current_tab, array(
+            'settings_saved' => array_keys($settings)
+        ));
+        
+        // Reschedule cron if scanning settings were changed
+        if ($current_tab === 'general') {
+            wp_clear_scheduled_hook('sentinelwp_scheduled_scan');
+        }
         
         wp_send_json_success('Settings saved successfully');
     }
