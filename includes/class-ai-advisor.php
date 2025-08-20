@@ -815,6 +815,27 @@ class SentinelWP_AI_Advisor {
             'prompt_length' => strlen($prompt)
         ));
         
+        // Configure request parameters based on model
+        $generation_config = array(
+            'temperature' => 0.7,
+            'topK' => 40,
+            'topP' => 0.95,
+            'maxOutputTokens' => 2048
+        );
+        
+        // Adjust configuration for different models
+        if (strpos($model, 'pro') !== false) {
+            // Gemini Pro models might need different settings
+            $generation_config['maxOutputTokens'] = 4096; // Allow more tokens for Pro
+            $generation_config['temperature'] = 0.5; // Slightly more deterministic
+            SentinelWP_Logger::debug('Using Pro model configuration', $generation_config);
+        } elseif (strpos($model, 'flash') !== false) {
+            // Flash models are optimized for speed
+            $generation_config['maxOutputTokens'] = 2048;
+            $generation_config['temperature'] = 0.7;
+            SentinelWP_Logger::debug('Using Flash model configuration', $generation_config);
+        }
+        
         $request_body = array(
             'contents' => array(
                 array(
@@ -823,21 +844,20 @@ class SentinelWP_AI_Advisor {
                     )
                 )
             ),
-            'generationConfig' => array(
-                'temperature' => 0.7,
-                'topK' => 40,
-                'topP' => 0.95,
-                'maxOutputTokens' => 2048
-            )
+            'generationConfig' => $generation_config
         );
         
         $api_url = $this->api_base_url . $model . ':generateContent?key=' . $api_key;
         $request_json = json_encode($request_body);
         
+        // Adjust timeout based on model - Pro models might need more time
+        $timeout = strpos($model, 'pro') !== false ? 60 : 30;
+        
         SentinelWP_Logger::debug('Making API request to Gemini', array(
             'url' => substr($api_url, 0, strpos($api_url, '?key=')) . '?key=***',
             'request_body_size' => strlen($request_json),
-            'timeout' => 30
+            'timeout' => $timeout,
+            'model_type' => strpos($model, 'pro') !== false ? 'pro' : 'standard'
         ));
         
         $response = wp_remote_post(
@@ -845,7 +865,7 @@ class SentinelWP_AI_Advisor {
             array(
                 'headers' => array('Content-Type' => 'application/json'),
                 'body' => $request_json,
-                'timeout' => 30
+                'timeout' => $timeout
             )
         );
         
@@ -898,12 +918,73 @@ class SentinelWP_AI_Advisor {
             return $ai_text;
         }
         
+        // Check for alternative response structures (some models might structure responses differently)
+        if (isset($response_data['candidates'][0]['output'])) {
+            $ai_text = $response_data['candidates'][0]['output'];
+            SentinelWP_Logger::info('Successfully extracted AI text from alternative structure', array(
+                'text_length' => strlen($ai_text),
+                'text_preview' => substr($ai_text, 0, 200)
+            ));
+            return $ai_text;
+        }
+        
+        // Check if there's an error in the response
+        if (isset($response_data['error'])) {
+            SentinelWP_Logger::error('Gemini API returned error', array(
+                'error_code' => $response_data['error']['code'] ?? 'unknown',
+                'error_message' => $response_data['error']['message'] ?? 'No error message',
+                'error_status' => $response_data['error']['status'] ?? 'unknown'
+            ));
+            return new WP_Error('api_error', 'Gemini API error: ' . ($response_data['error']['message'] ?? 'Unknown error'));
+        }
+        
+        // Check for rate limiting
+        if (isset($response_data['error']['status']) && $response_data['error']['status'] === 'RESOURCE_EXHAUSTED') {
+            SentinelWP_Logger::warning('Gemini API rate limit exceeded', array(
+                'model' => $model,
+                'retry_suggestion' => 'Consider switching to gemini-2.5-flash or waiting before retrying'
+            ));
+            return new WP_Error('rate_limit', 'Gemini API rate limit exceeded. Try again later or switch to a different model.');
+        }
+        
+        // Log full response structure for debugging
         SentinelWP_Logger::error('Invalid Gemini API response structure', array(
-            'response_structure' => $response_data,
-            'missing_path' => 'candidates[0].content.parts[0].text'
+            'full_response' => $response_data,
+            'model_used' => $model,
+            'expected_path' => 'candidates[0].content.parts[0].text',
+            'available_paths' => $this->analyze_response_structure($response_data)
         ));
         
-        return new WP_Error('invalid_response', 'Invalid response from Gemini API');
+        return new WP_Error('invalid_response', 'Invalid response from Gemini API - check logs for details');
+    }
+    
+    /**
+     * Analyze response structure for debugging
+     */
+    private function analyze_response_structure($data, $path = '') {
+        $paths = array();
+        
+        if (is_array($data)) {
+            foreach ($data as $key => $value) {
+                $current_path = $path ? $path . '.' . $key : $key;
+                if (is_array($value) || is_object($value)) {
+                    $paths = array_merge($paths, $this->analyze_response_structure($value, $current_path));
+                } else {
+                    $paths[] = $current_path . ' (' . gettype($value) . ')';
+                }
+            }
+        } elseif (is_object($data)) {
+            foreach (get_object_vars($data) as $key => $value) {
+                $current_path = $path ? $path . '.' . $key : $key;
+                if (is_array($value) || is_object($value)) {
+                    $paths = array_merge($paths, $this->analyze_response_structure($value, $current_path));
+                } else {
+                    $paths[] = $current_path . ' (' . gettype($value) . ')';
+                }
+            }
+        }
+        
+        return $paths;
     }
     
     /**
@@ -933,10 +1014,22 @@ class SentinelWP_AI_Advisor {
         $json_start = strpos($response, '[');
         $json_end = strrpos($response, ']') + 1;
         
-        if ($json_start === false || $json_end === false) {
+        if ($json_start === false || $json_end === false || $json_end <= $json_start) {
+            // Check if response appears truncated or incomplete
+            if (strlen($response) < 50 || strpos($response, '[') !== false) {
+                SentinelWP_Logger::warning('Possibly truncated or incomplete API response', array(
+                    'response_length' => strlen($response),
+                    'contains_json_start' => strpos($response, '[') !== false,
+                    'contains_json_end' => strpos($response, ']') !== false,
+                    'response_preview' => $response
+                ));
+                return array(); // Return empty array for incomplete responses
+            }
+            
             SentinelWP_Logger::error('No JSON array found in AI response', array(
                 'json_start_pos' => $json_start,
                 'json_end_pos' => $json_end,
+                'response_length' => strlen($response),
                 'response' => $response
             ));
             return array();

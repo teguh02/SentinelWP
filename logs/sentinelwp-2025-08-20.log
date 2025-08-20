@@ -1,52 +1,66 @@
-[2025-08-20 01:11:28] INFO: Logging system test started | User: 0 | IP: unknown
-[2025-08-20 01:11:28] DEBUG: This is a debug message | User: 0 | IP: unknown | Context: {"test_data":"sample"}
-[2025-08-20 01:11:28] WARNING: This is a warning message | User: 0 | IP: unknown
-[2025-08-20 01:11:28] INFO: AI Generation: test_generation | User: 0 | IP: unknown | Context: {"action":"test_generation","timestamp":"2025-08-20T01:11:28+00:00","memory_usage":2097152,"memory_peak":2097152,"test_mode":true,"user_id":1}
-[2025-08-20 01:11:28] INFO: API Request to Gemini | User: 0 | IP: unknown | Context: {"provider":"Gemini","endpoint":"generateContent","request_size":24,"response_size":28,"timestamp":"2025-08-20T01:11:28+00:00","request_preview":"{\"prompt\":\"test prompt\"}","response_preview":"{\"response\":\"test response\"}"}
-[2025-08-20 01:11:28] DEBUG: Database INSERT on sentinelwp_ai_recommendations | User: 0 | IP: unknown | Context: {"operation":"INSERT","table":"sentinelwp_ai_recommendations","data_preview":"{\"title\":\"Test recommendation\",\"priority\":\"high\"}","timestamp":"2025-08-20T01:11:28+00:00"}
-[2025-08-20 01:14:13] INFO: AJAX request for AI recommendations received | User: 1 | IP: 127.0.0.1
-[2025-08-20 01:14:13] DEBUG: Starting AI recommendations generation via AJAX | User: 1 | IP: 127.0.0.1
-[2025-08-20 01:14:13] INFO: AI Recommendations generation started | User: 1 | IP: 127.0.0.1
-[2025-08-20 01:14:13] DEBUG: API key found, proceeding with data gathering | User: 1 | IP: 127.0.0.1 | Context: {"api_key_length":39,"api_key_preview":"AIzaSyCVsM..."}
-[2025-08-20 01:14:13] DEBUG: Starting system data gathering | User: 1 | IP: 127.0.0.1
-[2025-08-20 01:15:12] INFO: AJAX request for AI recommendations received | User: 1 | IP: 127.0.0.1
-[2025-08-20 01:15:12] DEBUG: Starting AI recommendations generation via AJAX | User: 1 | IP: 127.0.0.1
-[2025-08-20 01:15:12] INFO: AI Recommendations generation started | User: 1 | IP: 127.0.0.1
-[2025-08-20 01:15:12] DEBUG: API key found, proceeding with data gathering | User: 1 | IP: 127.0.0.1 | Context: {"api_key_length":39,"api_key_preview":"AIzaSyCVsM..."}
-[2025-08-20 01:15:12] DEBUG: Starting system data gathering | User: 1 | IP: 127.0.0.1
-[2025-08-20 01:15:44] INFO: AJAX request for AI recommendations received | User: 1 | IP: 127.0.0.1
-[2025-08-20 01:15:44] DEBUG: Starting AI recommendations generation via AJAX | User: 1 | IP: 127.0.0.1
-[2025-08-20 01:15:44] INFO: AI Recommendations generation started | User: 1 | IP: 127.0.0.1
-[2025-08-20 01:15:44] DEBUG: API key found, proceeding with data gathering | User: 1 | IP: 127.0.0.1 | Context: {"api_key_length":39,"api_key_preview":"AIzaSyCVsM..."}
-[2025-08-20 01:15:44] DEBUG: Starting system data gathering | User: 1 | IP: 127.0.0.1
-[2025-08-20 01:18:29] INFO: AJAX request for AI recommendations received | User: 1 | IP: 127.0.0.1
-[2025-08-20 01:18:29] DEBUG: Starting AI recommendations generation via AJAX | User: 1 | IP: 127.0.0.1
-[2025-08-20 01:18:29] INFO: AI Recommendations generation started | User: 1 | IP: 127.0.0.1
-[2025-08-20 01:18:29] DEBUG: API key found, proceeding with data gathering | User: 1 | IP: 127.0.0.1 | Context: {"api_key_length":39,"api_key_preview":"AIzaSyCVsM..."}
-[2025-08-20 01:18:29] DEBUG: Starting system data gathering | User: 1 | IP: 127.0.0.1
-[2025-08-20 01:25:51] INFO: Database status checked via AJAX | User: 1 | IP: 127.0.0.1 | Context: {"all_exist":true,"existing":["wp_sentinelwp_scans","wp_sentinelwp_issues","wp_sentinelwp_logs","wp_sentinelwp_settings","wp_sentinelwp_ai_recommendations"],"missing":[],"total_required":5,"total_existing":5}
-[2025-08-20 01:29:26] INFO: AJAX request for AI recommendations received | User: 1 | IP: 127.0.0.1
-[2025-08-20 01:29:26] DEBUG: Starting AI recommendations generation via AJAX | User: 1 | IP: 127.0.0.1
-[2025-08-20 01:29:26] INFO: AI Recommendations generation started | User: 1 | IP: 127.0.0.1
-[2025-08-20 01:29:26] DEBUG: API key found, proceeding with data gathering | User: 1 | IP: 127.0.0.1 | Context: {"api_key_length":39,"api_key_preview":"AIzaSyCVsM..."}
-[2025-08-20 01:29:26] DEBUG: Starting system data gathering | User: 1 | IP: 127.0.0.1
-[2025-08-20 01:29:26] DEBUG: Starting data collection for AI analysis | User: 1 | IP: 127.0.0.1
-[2025-08-20 01:29:26] DEBUG: WordPress info collected | User: 1 | IP: 127.0.0.1 | Context: {"version":"6.8.2","plugin_count":1}
-[2025-08-20 01:29:26] DEBUG: Security stats collected | User: 1 | IP: 127.0.0.1 | Context: {"total_issues":0,"unresolved_issues":0,"critical_issues":0,"last_scan_date":null}
-[2025-08-20 01:29:26] DEBUG: System status collected | User: 1 | IP: 127.0.0.1 | Context: {"php_version":"8.3.24","exec_enabled":true,"clamav_available":false}
-[2025-08-20 01:29:26] DEBUG: System data gathering completed | User: 1 | IP: 127.0.0.1 | Context: {"total_data_keys":4,"wordpress_version":"6.8.2","total_plugins":1,"total_issues":0}
-[2025-08-20 01:29:26] DEBUG: System data gathered successfully | User: 1 | IP: 127.0.0.1 | Context: {"data_keys":["wordpress_info","security_stats","system_status","recent_security_events"],"wordpress_version":"6.8.2","total_plugins":1}
-[2025-08-20 01:29:26] DEBUG: Building AI prompt | User: 1 | IP: 127.0.0.1
-[2025-08-20 01:29:26] DEBUG: AI prompt built successfully | User: 1 | IP: 127.0.0.1 | Context: {"prompt_length":1008,"prompt_preview":"Based on the following WordPress security assessment, provide specific actionable recommendations in English. Focus on practical steps that can improve security:\n\n=== WORDPRESS ENVIRONMENT ===\nWordPre..."}
-[2025-08-20 01:29:26] INFO: Calling Gemini API for recommendations | User: 1 | IP: 127.0.0.1
-[2025-08-20 01:29:26] DEBUG: Preparing Gemini API request | User: 1 | IP: 127.0.0.1 | Context: {"model":"gemini-2.5-pro","api_key_length":39,"prompt_length":1008}
-[2025-08-20 01:29:26] DEBUG: Making API request to Gemini | User: 1 | IP: 127.0.0.1 | Context: {"url":"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=***","request_body_size":1179,"timeout":30}
-[2025-08-20 01:29:47] DEBUG: Gemini API HTTP response received | User: 1 | IP: 127.0.0.1 | Context: {"status_code":200,"response_size":962}
-[2025-08-20 01:29:47] DEBUG: Gemini API response parsed successfully | User: 1 | IP: 127.0.0.1 | Context: {"response_keys":["candidates","usageMetadata","modelVersion","responseId"],"has_candidates":true,"candidate_count":1}
-[2025-08-20 01:29:47] INFO: Successfully extracted AI text from response | User: 1 | IP: 127.0.0.1 | Context: {"text_length":394,"text_preview":"```json\n[\n  {\n    \"category\": \"server\",\n    \"title\": \"Implement SSL/TLS to Enable HTTPS\",\n    \"description\": \"Your site is currently served over an insecure HTTP connection. This means all data, inclu"}
-[2025-08-20 01:29:47] INFO: Gemini API call successful | User: 1 | IP: 127.0.0.1 | Context: {"response_type":"string","response_length":394}
-[2025-08-20 01:29:47] DEBUG: Parsing AI recommendations | User: 1 | IP: 127.0.0.1
-[2025-08-20 01:29:47] DEBUG: Starting to parse AI recommendations | User: 1 | IP: 127.0.0.1 | Context: {"response_length":394,"response_preview":"```json\n[\n  {\n    \"category\": \"server\",\n    \"title\": \"Implement SSL/TLS to Enable HTTPS\",\n    \"description\": \"Your site is currently served over an insecure HTTP connection. This means all data, including login credentials, is transmitted in plaintext and can be intercepted. Obtain and install an SS"}
-[2025-08-20 01:29:47] DEBUG: Extracted JSON string from response | User: 1 | IP: 127.0.0.1 | Context: {"json_length":379,"json_preview":"[\n  {\n    \"category\": \"server\",\n    \"title\": \"Implement SSL/TLS to Enable HTTPS\",\n    \"description\": \"Your site is currently served over an insecure HTTP connection. This means all data, including login credentials, is transmitted in plaintext and can be intercepted. Obtain and install an SSL/TLS certificate (free options like Let's Encrypt are available) and configure your se"}
-[2025-08-20 01:29:47] WARNING: No recommendations parsed from AI response | User: 1 | IP: 127.0.0.1 | Context: {"response_preview":"```json\n[\n  {\n    \"category\": \"server\",\n    \"title\": \"Implement SSL/TLS to Enable HTTPS\",\n    \"description\": \"Your site is currently served over an insecure HTTP connection. This means all data, including login credentials, is transmitted in plaintext and can be intercepted. Obtain and install an SSL/TLS certificate (free options like Let's Encrypt are available) and configure your server to"}
-[2025-08-20 01:29:47] INFO: AI recommendations generation succeeded via AJAX | User: 1 | IP: 127.0.0.1 | Context: {"recommendation_count":0}
+[2025-08-20 01:50:29] INFO: AJAX request for AI recommendations received | User: 1 | IP: 127.0.0.1
+[2025-08-20 01:50:29] DEBUG: Starting AI recommendations generation via AJAX | User: 1 | IP: 127.0.0.1
+[2025-08-20 01:50:29] INFO: AI Recommendations generation started | User: 1 | IP: 127.0.0.1
+[2025-08-20 01:50:29] DEBUG: API key found, proceeding with data gathering | User: 1 | IP: 127.0.0.1 | Context: {"api_key_length":39,"api_key_preview":"AIzaSyCVsM..."}
+[2025-08-20 01:50:29] DEBUG: Starting system data gathering | User: 1 | IP: 127.0.0.1
+[2025-08-20 01:50:29] DEBUG: Starting data collection for AI analysis | User: 1 | IP: 127.0.0.1
+[2025-08-20 01:50:29] DEBUG: WordPress info collected | User: 1 | IP: 127.0.0.1 | Context: {"version":"6.8.2","plugin_count":1}
+[2025-08-20 01:50:29] DEBUG: Security stats collected | User: 1 | IP: 127.0.0.1 | Context: {"total_issues":0,"unresolved_issues":0,"critical_issues":0,"last_scan_date":"2025-08-20 00:50:31"}
+[2025-08-20 01:50:29] DEBUG: System status collected | User: 1 | IP: 127.0.0.1 | Context: {"php_version":"8.3.24","exec_enabled":true,"clamav_available":false}
+[2025-08-20 01:50:29] DEBUG: System data gathering completed | User: 1 | IP: 127.0.0.1 | Context: {"total_data_keys":4,"wordpress_version":"6.8.2","total_plugins":1,"total_issues":0}
+[2025-08-20 01:50:29] DEBUG: System data gathered successfully | User: 1 | IP: 127.0.0.1 | Context: {"data_keys":["wordpress_info","security_stats","system_status","recent_security_events"],"wordpress_version":"6.8.2","total_plugins":1}
+[2025-08-20 01:50:29] DEBUG: Building AI prompt | User: 1 | IP: 127.0.0.1
+[2025-08-20 01:50:29] DEBUG: AI prompt built successfully | User: 1 | IP: 127.0.0.1 | Context: {"prompt_length":1008,"prompt_preview":"Based on the following WordPress security assessment, provide specific actionable recommendations in English. Focus on practical steps that can improve security:\n\n=== WORDPRESS ENVIRONMENT ===\nWordPre..."}
+[2025-08-20 01:50:29] INFO: Calling Gemini API for recommendations | User: 1 | IP: 127.0.0.1
+[2025-08-20 01:50:29] DEBUG: Preparing Gemini API request | User: 1 | IP: 127.0.0.1 | Context: {"model":"gemini-2.5-pro","api_key_length":39,"prompt_length":1008}
+[2025-08-20 01:50:29] DEBUG: Using Pro model configuration | User: 1 | IP: 127.0.0.1 | Context: {"temperature":0.5,"topK":40,"topP":0.95,"maxOutputTokens":4096}
+[2025-08-20 01:50:29] DEBUG: Making API request to Gemini | User: 1 | IP: 127.0.0.1 | Context: {"url":"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=***","request_body_size":1179,"timeout":60,"model_type":"pro"}
+[2025-08-20 01:50:59] DEBUG: Gemini API HTTP response received | User: 1 | IP: 127.0.0.1 | Context: {"status_code":200,"response_size":4469}
+[2025-08-20 01:50:59] DEBUG: Gemini API response parsed successfully | User: 1 | IP: 127.0.0.1 | Context: {"response_keys":["candidates","usageMetadata","modelVersion","responseId"],"has_candidates":true,"candidate_count":1}
+[2025-08-20 01:50:59] INFO: Successfully extracted AI text from response | User: 1 | IP: 127.0.0.1 | Context: {"text_length":3744,"text_preview":"```json\n[\n  {\n    \"category\": \"server\",\n    \"title\": \"Implement SSL/TLS and Enforce HTTPS\",\n    \"description\": \"Your site is currently served over an insecure 'http://' connection. This means all data"}
+[2025-08-20 01:50:59] INFO: Gemini API call successful | User: 1 | IP: 127.0.0.1 | Context: {"response_type":"string","response_length":3744}
+[2025-08-20 01:50:59] DEBUG: Parsing AI recommendations | User: 1 | IP: 127.0.0.1
+[2025-08-20 01:50:59] DEBUG: Starting to parse AI recommendations | User: 1 | IP: 127.0.0.1 | Context: {"response_length":3744,"response_preview":"```json\n[\n  {\n    \"category\": \"server\",\n    \"title\": \"Implement SSL/TLS and Enforce HTTPS\",\n    \"description\": \"Your site is currently served over an insecure 'http://' connection. This means all data, including login credentials, is sent in plain text and can be intercepted. Install a free SSL/TLS "}
+[2025-08-20 01:50:59] DEBUG: Removed markdown code block markers | User: 1 | IP: 127.0.0.1 | Context: {"cleaned_response_preview":"[\n  {\n    \"category\": \"server\",\n    \"title\": \"Implement SSL/TLS and Enforce HTTPS\",\n    \"description\": \"Your site is currently served over an insecure 'http://' connection. This means all data, includ"}
+[2025-08-20 01:50:59] DEBUG: Extracted JSON string from response | User: 1 | IP: 127.0.0.1 | Context: {"json_length":3732,"json_preview":"[\n  {\n    \"category\": \"server\",\n    \"title\": \"Implement SSL/TLS and Enforce HTTPS\",\n    \"description\": \"Your site is currently served over an insecure 'http://' connection. This means all data, including login credentials, is sent in plain text and can be intercepted. Install a free SSL/TLS certificate (e.g., from Let's Encrypt) on your server and configure WordPress to enforce 'https://' for all traffic. This encrypts data in transit, protecting user privacy and trust.\",\n    \"priority\": \"critic"}
+[2025-08-20 01:50:59] DEBUG: JSON parsing successful | User: 1 | IP: 127.0.0.1 | Context: {"parsed_type":"array","is_array":true,"count":7}
+[2025-08-20 01:50:59] DEBUG: JSON decoded successfully | User: 1 | IP: 127.0.0.1 | Context: {"recommendation_count":7,"first_item_keys":["category","title","description","priority","confidence_score"]}
+[2025-08-20 01:50:59] DEBUG: Successfully parsed recommendation 0 | User: 1 | IP: 127.0.0.1 | Context: {"title":"Implement SSL/TLS and Enforce HTTPS","category":"server","priority":"critical","confidence_score":1}
+[2025-08-20 01:50:59] DEBUG: Successfully parsed recommendation 1 | User: 1 | IP: 127.0.0.1 | Context: {"title":"Configure Automated, Off-Site Backups","category":"backup","priority":"critical","confidence_score":1}
+[2025-08-20 01:50:59] DEBUG: Successfully parsed recommendation 2 | User: 1 | IP: 127.0.0.1 | Context: {"title":"Disable Potentially Dangerous PHP Functions","category":"server","priority":"high","confidence_score":0.95}
+[2025-08-20 01:50:59] DEBUG: Successfully parsed recommendation 3 | User: 1 | IP: 127.0.0.1 | Context: {"title":"Enable Two-Factor Authentication (2FA) for All Users","category":"user_management","priority":"high","confidence_score":0.95}
+[2025-08-20 01:50:59] DEBUG: Successfully parsed recommendation 4 | User: 1 | IP: 127.0.0.1 | Context: {"title":"Install a Security Plugin for Malware Scanning and Firewall","category":"plugins","priority":"high","confidence_score":0.9}
+[2025-08-20 01:50:59] DEBUG: Successfully parsed recommendation 5 | User: 1 | IP: 127.0.0.1 | Context: {"title":"Harden WordPress File and Directory Permissions","category":"file_permissions","priority":"medium","confidence_score":0.9}
+[2025-08-20 01:50:59] DEBUG: Successfully parsed recommendation 6 | User: 1 | IP: 127.0.0.1 | Context: {"title":"Implement HTTP Security Headers","category":"security_headers","priority":"medium","confidence_score":0.85}
+[2025-08-20 01:50:59] INFO: AI recommendations parsing completed | User: 1 | IP: 127.0.0.1 | Context: {"total_items":7,"successfully_parsed":7,"failed_items":0}
+[2025-08-20 01:50:59] INFO: Recommendations parsed successfully | User: 1 | IP: 127.0.0.1 | Context: {"recommendation_count":7,"recommendation_titles":["Implement SSL/TLS and Enforce HTTPS","Configure Automated, Off-Site Backups","Disable Potentially Dangerous PHP Functions","Enable Two-Factor Authentication (2FA) for All Users","Install a Security Plugin for Malware Scanning and Firewall","Harden WordPress File and Directory Permissions","Implement HTTP Security Headers"]}
+[2025-08-20 01:50:59] DEBUG: Storing recommendation in database | User: 1 | IP: 127.0.0.1 | Context: {"title":"Implement SSL/TLS and Enforce HTTPS","category":"server","priority":"critical"}
+[2025-08-20 01:50:59] DEBUG: Attempting to insert AI recommendation | User: 1 | IP: 127.0.0.1 | Context: {"title":"Implement SSL/TLS and Enforce HTTPS","category":"server","priority":"critical"}
+[2025-08-20 01:50:59] DEBUG: Prepared data for AI recommendation insertion | User: 1 | IP: 127.0.0.1 | Context: {"table":"wp_sentinelwp_ai_recommendations","data_keys":["category","title","description","priority","recommendation_type","source","status","confidence_score","generated_at"]}
+[2025-08-20 01:50:59] INFO: AI recommendation inserted successfully | User: 1 | IP: 127.0.0.1 | Context: {"insert_id":1,"title":"Implement SSL/TLS and Enforce HTTPS"}
+[2025-08-20 01:50:59] DEBUG: Storing recommendation in database | User: 1 | IP: 127.0.0.1 | Context: {"title":"Configure Automated, Off-Site Backups","category":"backup","priority":"critical"}
+[2025-08-20 01:50:59] DEBUG: Attempting to insert AI recommendation | User: 1 | IP: 127.0.0.1 | Context: {"title":"Configure Automated, Off-Site Backups","category":"backup","priority":"critical"}
+[2025-08-20 01:50:59] DEBUG: Prepared data for AI recommendation insertion | User: 1 | IP: 127.0.0.1 | Context: {"table":"wp_sentinelwp_ai_recommendations","data_keys":["category","title","description","priority","recommendation_type","source","status","confidence_score","generated_at"]}
+[2025-08-20 01:50:59] INFO: AI recommendation inserted successfully | User: 1 | IP: 127.0.0.1 | Context: {"insert_id":2,"title":"Configure Automated, Off-Site Backups"}
+[2025-08-20 01:50:59] DEBUG: Storing recommendation in database | User: 1 | IP: 127.0.0.1 | Context: {"title":"Disable Potentially Dangerous PHP Functions","category":"server","priority":"high"}
+[2025-08-20 01:50:59] DEBUG: Attempting to insert AI recommendation | User: 1 | IP: 127.0.0.1 | Context: {"title":"Disable Potentially Dangerous PHP Functions","category":"server","priority":"high"}
+[2025-08-20 01:50:59] DEBUG: Prepared data for AI recommendation insertion | User: 1 | IP: 127.0.0.1 | Context: {"table":"wp_sentinelwp_ai_recommendations","data_keys":["category","title","description","priority","recommendation_type","source","status","confidence_score","generated_at"]}
+[2025-08-20 01:50:59] INFO: AI recommendation inserted successfully | User: 1 | IP: 127.0.0.1 | Context: {"insert_id":3,"title":"Disable Potentially Dangerous PHP Functions"}
+[2025-08-20 01:50:59] DEBUG: Storing recommendation in database | User: 1 | IP: 127.0.0.1 | Context: {"title":"Enable Two-Factor Authentication (2FA) for All Users","category":"user_management","priority":"high"}
+[2025-08-20 01:50:59] DEBUG: Attempting to insert AI recommendation | User: 1 | IP: 127.0.0.1 | Context: {"title":"Enable Two-Factor Authentication (2FA) for All Users","category":"user_management","priority":"high"}
+[2025-08-20 01:50:59] DEBUG: Prepared data for AI recommendation insertion | User: 1 | IP: 127.0.0.1 | Context: {"table":"wp_sentinelwp_ai_recommendations","data_keys":["category","title","description","priority","recommendation_type","source","status","confidence_score","generated_at"]}
+[2025-08-20 01:50:59] INFO: AI recommendation inserted successfully | User: 1 | IP: 127.0.0.1 | Context: {"insert_id":4,"title":"Enable Two-Factor Authentication (2FA) for All Users"}
+[2025-08-20 01:50:59] DEBUG: Storing recommendation in database | User: 1 | IP: 127.0.0.1 | Context: {"title":"Install a Security Plugin for Malware Scanning and Firewall","category":"plugins","priority":"high"}
+[2025-08-20 01:50:59] DEBUG: Attempting to insert AI recommendation | User: 1 | IP: 127.0.0.1 | Context: {"title":"Install a Security Plugin for Malware Scanning and Firewall","category":"plugins","priority":"high"}
+[2025-08-20 01:50:59] DEBUG: Prepared data for AI recommendation insertion | User: 1 | IP: 127.0.0.1 | Context: {"table":"wp_sentinelwp_ai_recommendations","data_keys":["category","title","description","priority","recommendation_type","source","status","confidence_score","generated_at"]}
+[2025-08-20 01:50:59] INFO: AI recommendation inserted successfully | User: 1 | IP: 127.0.0.1 | Context: {"insert_id":5,"title":"Install a Security Plugin for Malware Scanning and Firewall"}
+[2025-08-20 01:50:59] DEBUG: Storing recommendation in database | User: 1 | IP: 127.0.0.1 | Context: {"title":"Harden WordPress File and Directory Permissions","category":"file_permissions","priority":"medium"}
+[2025-08-20 01:50:59] DEBUG: Attempting to insert AI recommendation | User: 1 | IP: 127.0.0.1 | Context: {"title":"Harden WordPress File and Directory Permissions","category":"file_permissions","priority":"medium"}
+[2025-08-20 01:50:59] DEBUG: Prepared data for AI recommendation insertion | User: 1 | IP: 127.0.0.1 | Context: {"table":"wp_sentinelwp_ai_recommendations","data_keys":["category","title","description","priority","recommendation_type","source","status","confidence_score","generated_at"]}
+[2025-08-20 01:50:59] INFO: AI recommendation inserted successfully | User: 1 | IP: 127.0.0.1 | Context: {"insert_id":6,"title":"Harden WordPress File and Directory Permissions"}
+[2025-08-20 01:50:59] DEBUG: Storing recommendation in database | User: 1 | IP: 127.0.0.1 | Context: {"title":"Implement HTTP Security Headers","category":"security_headers","priority":"medium"}
+[2025-08-20 01:50:59] DEBUG: Attempting to insert AI recommendation | User: 1 | IP: 127.0.0.1 | Context: {"title":"Implement HTTP Security Headers","category":"security_headers","priority":"medium"}
+[2025-08-20 01:50:59] DEBUG: Prepared data for AI recommendation insertion | User: 1 | IP: 127.0.0.1 | Context: {"table":"wp_sentinelwp_ai_recommendations","data_keys":["category","title","description","priority","recommendation_type","source","status","confidence_score","generated_at"]}
+[2025-08-20 01:50:59] INFO: AI recommendation inserted successfully | User: 1 | IP: 127.0.0.1 | Context: {"insert_id":7,"title":"Implement HTTP Security Headers"}
+[2025-08-20 01:50:59] INFO: Successfully stored 7 recommendations in database | User: 1 | IP: 127.0.0.1
+[2025-08-20 01:50:59] INFO: AI recommendations generation succeeded via AJAX | User: 1 | IP: 127.0.0.1 | Context: {"recommendation_count":7}

@@ -1,0 +1,174 @@
+# WordPress Plugin .gitignore for SentinelWP
+
+# ===================
+# Plugin-specific files
+# ===================
+
+# Log files - should not be committed
+logs/
+*.log
+sentinelwp*.log
+
+# Test files - development only
+debug-test.php
+test-*.php
+*-test.php
+
+# Configuration files with sensitive data
+config.local.php
+.env
+.env.local
+.env.production
+
+# ===================
+# Development files
+# ===================
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.buildpath
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ===================
+# Dependency management
+# ===================
+
+# Composer
+vendor/
+composer.lock
+composer.phar
+
+# Node.js (if using build tools)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# ===================
+# Build and dist files
+# ===================
+
+# Compiled/minified files
+*.min.js
+*.min.css
+build/
+dist/
+
+# Sass cache
+.sass-cache/
+*.css.map
+*.js.map
+
+# ===================
+# Temporary files
+# ===================
+
+# Backup files
+*.bak
+*.backup
+*.tmp
+*~
+
+# Cache files
+cache/
+.cache/
+wp-cache-config.php
+
+# Upload/media files (if any)
+uploads/
+media/
+
+# ===================
+# Documentation builds
+# ===================
+
+# Generated documentation
+docs/_build/
+*.pdf
+*.epub
+
+# ===================
+# Security and sensitive data
+# ===================
+
+# API keys and secrets (just in case)
+secrets.php
+api-keys.php
+*.key
+*.pem
+*.crt
+
+# Database files
+*.sql
+*.sqlite
+*.db
+
+# ===================
+# Plugin-specific ignores
+# ===================
+
+# SentinelWP specific
+quarantine/
+isolated-files/
+scan-cache/
+temp-analysis/
+
+# Any local configuration overrides
+local-config.php
+dev-settings.php
+
+# ===================
+# Archive and package files
+# ===================
+
+*.zip
+*.tar
+*.tar.gz
+*.rar
+*.7z
+
+# ===================
+# Version control
+# ===================
+
+# Git
+.git/
+.gitattributes
+
+# SVN (WordPress.org uses SVN)
+.svn/
+
+# ===================
+# Miscellaneous
+# ===================
+
+# WordPress specific
+wp-config.php
+.htaccess
+
+# PHP specific
+*.phpcache
+opcache/
+
+# Error logs
+error_log
+php_errors.log
