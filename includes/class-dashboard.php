@@ -40,6 +40,7 @@ class SentinelWP_Dashboard {
         add_action('wp_ajax_sentinelwp_generate_issue_report', array($this, 'ajax_generate_issue_report'));
         add_action('wp_ajax_sentinelwp_mark_notification_read', array($this, 'ajax_mark_notification_read'));
         add_action('wp_ajax_sentinelwp_delete_notification', array($this, 'ajax_delete_notification'));
+        add_action('wp_ajax_sentinelwp_test_telegram', array($this, 'ajax_test_telegram'));
         add_action('wp_ajax_sentinelwp_mark_notification_read', array($this, 'ajax_mark_notification_read'));
         add_action('wp_ajax_sentinelwp_delete_notification', array($this, 'ajax_delete_notification'));
     }
@@ -738,7 +739,10 @@ class SentinelWP_Dashboard {
                             <th scope="row"><?php _e('Telegram Chat ID', 'sentinelwp'); ?></th>
                             <td>
                                 <input type="text" name="telegram_chat_id" value="<?php echo esc_attr(get_option('sentinelwp_telegram_chat_id', '')); ?>" class="regular-text" />
-                                <p class="description"><?php _e('Chat ID to send notifications to', 'sentinelwp'); ?></p>
+                                <button type="button" id="test-telegram-btn" class="button button-secondary" style="margin-left: 10px;">
+                                    <?php _e('Test Configuration', 'sentinelwp'); ?>
+                                </button>
+                                <p class="description"><?php _e('Chat ID to send notifications to. Click "Test Configuration" to verify your Telegram setup.', 'sentinelwp'); ?></p>
                             </td>
                         </tr>
                     </table>
@@ -1189,6 +1193,39 @@ class SentinelWP_Dashboard {
         wp_clear_scheduled_hook('sentinelwp_scheduled_scan');
         
         wp_send_json_success('Settings saved successfully');
+    }
+    
+    /**
+     * AJAX handler for testing Telegram configuration
+     */
+    public function ajax_test_telegram() {
+        check_ajax_referer('sentinelwp_nonce', 'nonce');
+        
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error('Insufficient permissions');
+        }
+        
+        // Get current settings (they might not be saved yet)
+        $bot_token = get_option('sentinelwp_telegram_bot_token', '');
+        $chat_id = get_option('sentinelwp_telegram_chat_id', '');
+        
+        if (empty($bot_token)) {
+            wp_send_json_error('Telegram Bot Token is required. Please enter your bot token and save settings first.');
+        }
+        
+        if (empty($chat_id)) {
+            wp_send_json_error('Telegram Chat ID is required. Please enter your chat ID and save settings first.');
+        }
+        
+        // Get notifications instance and test
+        $notifications = SentinelWP_Notifications::instance();
+        $result = $notifications->test_telegram_notification();
+        
+        if ($result) {
+            wp_send_json_success('Test message sent successfully! Check your Telegram chat.');
+        } else {
+            wp_send_json_error('Failed to send test message. Please check your bot token and chat ID.');
+        }
     }
     
     /**

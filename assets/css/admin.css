@@ -471,6 +471,56 @@
     color: #1d2327;
 }
 
+/* Test Telegram Button */
+#test-telegram-btn {
+    background: linear-gradient(135deg, #0088cc 0%, #0099e5 100%);
+    border-color: #0088cc;
+    color: #fff;
+    font-weight: 500;
+    position: relative;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 136, 204, 0.3);
+}
+
+#test-telegram-btn:hover {
+    background: linear-gradient(135deg, #0077bb 0%, #0088cc 100%);
+    border-color: #0077bb;
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 136, 204, 0.4);
+}
+
+#test-telegram-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 136, 204, 0.3);
+}
+
+#test-telegram-btn:disabled {
+    background: #cccccc;
+    border-color: #cccccc;
+    color: #666666;
+    transform: none;
+    box-shadow: none;
+    cursor: not-allowed;
+}
+
+#test-telegram-btn::before {
+    content: "📱";
+    margin-right: 5px;
+    font-size: 14px;
+}
+
+/* Loading state for test telegram button */
+#test-telegram-btn.loading::before {
+    content: "⏳";
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
 /* Responsive */
 @media (max-width: 782px) {
     .sentinelwp-status-cards {

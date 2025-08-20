@@ -444,7 +444,7 @@
             const $btn = $(this);
             const originalText = $btn.text();
             
-            $btn.prop('disabled', true).text('Sending...');
+            $btn.prop('disabled', true).addClass('loading').text('Sending...');
             
             $.ajax({
                 url: sentinelwp_ajax.ajax_url,
@@ -455,16 +455,16 @@
                 },
                 success: function(response) {
                     if (response.success) {
-                        SentinelWP.showNotice('success', 'Test Telegram message sent successfully!');
+                        SentinelWP.showNotice('success', response.data);
                     } else {
-                        SentinelWP.showNotice('error', 'Failed to send test message: ' + response.data);
+                        SentinelWP.showNotice('error', response.data);
                     }
                 },
                 error: function() {
                     SentinelWP.showNotice('error', 'An error occurred while sending test message');
                 },
                 complete: function() {
-                    $btn.prop('disabled', false).text(originalText);
+                    $btn.prop('disabled', false).removeClass('loading').text(originalText);
                 }
             });
         },

@@ -95,6 +95,14 @@ define('SENTINELWP_TELEGRAM_BOT_TOKEN', 'your_bot_token');
 define('SENTINELWP_TELEGRAM_CHAT_ID', 'your_chat_id');
 ```
 
+#### Testing Telegram Configuration
+After setting up your Telegram bot:
+1. Navigate to **SentinelWP → Settings → Notifications**
+2. Enter your Bot Token and Chat ID
+3. Click **"Test Configuration"** button to verify setup
+4. You should receive a test message in your Telegram chat
+5. If test fails, double-check your bot token and chat ID
+
 ### AI Advisor Settings
 ```php
 // Gemini API configuration
