@@ -37,6 +37,7 @@ class SentinelWP_Dashboard {
         add_action('wp_ajax_sentinelwp_update_ai_recommendation', array($this, 'ajax_update_ai_recommendation'));
         add_action('wp_ajax_sentinelwp_check_database', array($this, 'ajax_check_database'));
         add_action('wp_ajax_sentinelwp_migrate_database', array($this, 'ajax_migrate_database'));
+        add_action('wp_ajax_sentinelwp_generate_issue_report', array($this, 'ajax_generate_issue_report'));
     }
     
     /**
@@ -639,6 +640,9 @@ class SentinelWP_Dashboard {
                 <a href="?page=sentinelwp-settings&tab=database" class="nav-tab <?php echo $current_tab == 'database' ? 'nav-tab-active' : ''; ?>">
                     <?php _e('Database', 'sentinelwp'); ?>
                 </a>
+                <a href="?page=sentinelwp-settings&tab=report" class="nav-tab <?php echo $current_tab == 'report' ? 'nav-tab-active' : ''; ?>">
+                    <?php _e('Report Issue', 'sentinelwp'); ?>
+                </a>
             </nav>
             
             <form id="sentinelwp-settings-form" method="post">
@@ -787,7 +791,90 @@ class SentinelWP_Dashboard {
                 </div>
                 <?php endif; ?>
                 
-                <?php if ($current_tab != 'database'): ?>
+                <?php if ($current_tab == 'report'): ?>
+                <div class="tab-content">
+                    <div class="notice notice-info">
+                        <p><?php _e('Report bugs, issues, or feature requests directly to the SentinelWP development team.', 'sentinelwp'); ?></p>
+                    </div>
+                    
+                    <div class="report-issue-container" style="background: #fff; padding: 20px; border: 1px solid #ccd0d4; border-radius: 4px; margin: 20px 0;">
+                        <h3><?php _e('Report Issue', 'sentinelwp'); ?></h3>
+                        <p><?php _e('When you click "Generate Issue Report", we\'ll collect system information and open a new GitHub issue with pre-filled details to help us assist you better.', 'sentinelwp'); ?></p>
+                        
+                        <div class="report-form" style="margin: 20px 0;">
+                            <table class="form-table">
+                                <tr>
+                                    <th scope="row"><?php _e('Issue Type', 'sentinelwp'); ?></th>
+                                    <td>
+                                        <select id="issue-type" style="min-width: 200px;">
+                                            <option value="bug"><?php _e('Bug Report', 'sentinelwp'); ?></option>
+                                            <option value="feature"><?php _e('Feature Request', 'sentinelwp'); ?></option>
+                                            <option value="question"><?php _e('Question/Support', 'sentinelwp'); ?></option>
+                                            <option value="documentation"><?php _e('Documentation Issue', 'sentinelwp'); ?></option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th scope="row"><?php _e('Issue Title', 'sentinelwp'); ?></th>
+                                    <td>
+                                        <input type="text" id="issue-title" placeholder="<?php _e('Brief description of the issue...', 'sentinelwp'); ?>" style="width: 100%; max-width: 500px;" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th scope="row"><?php _e('Description', 'sentinelwp'); ?></th>
+                                    <td>
+                                        <textarea id="issue-description" rows="6" placeholder="<?php _e('Please describe the issue in detail...', 'sentinelwp'); ?>" style="width: 100%; max-width: 500px;"></textarea>
+                                        <p class="description"><?php _e('Provide as much detail as possible to help us understand and resolve the issue.', 'sentinelwp'); ?></p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th scope="row"><?php _e('Include System Info', 'sentinelwp'); ?></th>
+                                    <td>
+                                        <label>
+                                            <input type="checkbox" id="include-system-info" checked /> 
+                                            <?php _e('Include system information (WordPress version, PHP version, plugin version, etc.)', 'sentinelwp'); ?>
+                                        </label>
+                                        <p class="description"><?php _e('This helps us diagnose issues faster. No sensitive data is included.', 'sentinelwp'); ?></p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th scope="row"><?php _e('Include Recent Logs', 'sentinelwp'); ?></th>
+                                    <td>
+                                        <label>
+                                            <input type="checkbox" id="include-logs" /> 
+                                            <?php _e('Include recent error logs (sanitized)', 'sentinelwp'); ?>
+                                        </label>
+                                        <p class="description"><?php _e('Only error logs from the last 24 hours. Personal data will be sanitized.', 'sentinelwp'); ?></p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        
+                        <div class="report-actions" style="margin-top: 20px;">
+                            <button type="button" id="generate-issue-report" class="button button-primary">
+                                <span class="dashicons dashicons-external" style="margin-right: 5px;"></span>
+                                <?php _e('Generate Issue Report', 'sentinelwp'); ?>
+                            </button>
+                            <p class="description" style="margin-top: 10px;">
+                                <?php _e('This will open GitHub in a new tab with a pre-filled issue. You can review and edit the information before submitting.', 'sentinelwp'); ?>
+                            </p>
+                        </div>
+                        
+                        <div id="report-status" style="margin-top: 15px;"></div>
+                    </div>
+                    
+                    <div class="help-links" style="background: #f8f9fa; padding: 15px; border-radius: 4px; margin: 20px 0;">
+                        <h4><?php _e('Other Ways to Get Help', 'sentinelwp'); ?></h4>
+                        <ul>
+                            <li><a href="https://github.com/teguh02/SentinelWP" target="_blank"><?php _e('Visit GitHub Repository', 'sentinelwp'); ?></a></li>
+                            <li><a href="https://github.com/teguh02/SentinelWP/issues" target="_blank"><?php _e('Browse Existing Issues', 'sentinelwp'); ?></a></li>
+                            <li><a href="https://github.com/teguh02/SentinelWP/wiki" target="_blank"><?php _e('Documentation & Wiki', 'sentinelwp'); ?></a></li>
+                        </ul>
+                    </div>
+                </div>
+                <?php endif; ?>
+                
+                <?php if ($current_tab != 'database' && $current_tab != 'report'): ?>
                 <p class="submit">
                     <button type="submit" class="button-primary" id="save-settings-btn">
                         <?php _e('Save Settings', 'sentinelwp'); ?>
@@ -912,6 +999,63 @@ class SentinelWP_Dashboard {
                     },
                     complete: function() {
                         $btn.prop('disabled', false).text('Recreate Database Tables');
+                    }
+                });
+            });
+            
+            // Issue report generation
+            $('#generate-issue-report').click(function() {
+                var $btn = $(this);
+                var $status = $('#report-status');
+                
+                // Validate required fields
+                var issueType = $('#issue-type').val();
+                var issueTitle = $('#issue-title').val().trim();
+                var issueDescription = $('#issue-description').val().trim();
+                
+                if (!issueTitle) {
+                    $status.html('<div class="notice notice-error"><p>Please provide an issue title.</p></div>');
+                    return;
+                }
+                
+                if (!issueDescription) {
+                    $status.html('<div class="notice notice-error"><p>Please provide an issue description.</p></div>');
+                    return;
+                }
+                
+                $btn.prop('disabled', true).text('Generating Report...');
+                $status.html('<div class="notice notice-info"><p>Collecting system information...</p></div>');
+                
+                var requestData = {
+                    action: 'sentinelwp_generate_issue_report',
+                    nonce: sentinelwp_ajax.nonce,
+                    issue_type: issueType,
+                    issue_title: issueTitle,
+                    issue_description: issueDescription,
+                    include_system_info: $('#include-system-info').is(':checked'),
+                    include_logs: $('#include-logs').is(':checked')
+                };
+                
+                $.ajax({
+                    url: sentinelwp_ajax.ajax_url,
+                    type: 'POST',
+                    data: requestData,
+                    success: function(response) {
+                        if (response.success) {
+                            var githubUrl = response.data.github_url;
+                            $status.html('<div class="notice notice-success"><p>Issue report generated! <a href="' + githubUrl + '" target="_blank" class="button button-secondary">Open GitHub Issue</a></p></div>');
+                            
+                            // Auto-open GitHub in new tab
+                            window.open(githubUrl, '_blank');
+                        } else {
+                            $status.html('<div class="notice notice-error"><p>Failed to generate report: ' + response.data + '</p></div>');
+                        }
+                    },
+                    error: function() {
+                        $status.html('<div class="notice notice-error"><p>An error occurred while generating the report.</p></div>');
+                    },
+                    complete: function() {
+                        $btn.prop('disabled', false).text('Generate Issue Report');
                     }
                 });
             });
@@ -1395,5 +1539,192 @@ class SentinelWP_Dashboard {
             ));
             wp_send_json_error('Database migration failed: ' . $e->getMessage());
         }
+    }
+    
+    /**
+     * AJAX handler for generating issue reports
+     */
+    public function ajax_generate_issue_report() {
+        check_ajax_referer('sentinelwp_nonce', 'nonce');
+        
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error('Insufficient permissions');
+        }
+        
+        try {
+            $issue_type = sanitize_text_field($_POST['issue_type'] ?? 'bug');
+            $issue_title = sanitize_text_field($_POST['issue_title'] ?? '');
+            $issue_description = sanitize_textarea_field($_POST['issue_description'] ?? '');
+            $include_system_info = isset($_POST['include_system_info']) && $_POST['include_system_info'] === 'true';
+            $include_logs = isset($_POST['include_logs']) && $_POST['include_logs'] === 'true';
+            
+            if (empty($issue_title) || empty($issue_description)) {
+                wp_send_json_error('Issue title and description are required');
+            }
+            
+            SentinelWP_Logger::info('Issue report generation requested', array(
+                'issue_type' => $issue_type,
+                'include_system_info' => $include_system_info,
+                'include_logs' => $include_logs,
+                'user_id' => get_current_user_id()
+            ));
+            
+            // Prepare issue content
+            $issue_content = $this->build_issue_report_content(
+                $issue_type,
+                $issue_title,
+                $issue_description,
+                $include_system_info,
+                $include_logs
+            );
+            
+            // Generate GitHub issue URL
+            $github_url = $this->generate_github_issue_url($issue_type, $issue_title, $issue_content);
+            
+            wp_send_json_success(array(
+                'message' => 'Issue report generated successfully',
+                'github_url' => $github_url
+            ));
+            
+        } catch (Exception $e) {
+            SentinelWP_Logger::error('Issue report generation failed', array(
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ));
+            wp_send_json_error('Failed to generate issue report: ' . $e->getMessage());
+        }
+    }
+    
+    /**
+     * Build issue report content
+     */
+    private function build_issue_report_content($issue_type, $title, $description, $include_system_info, $include_logs) {
+        $content = "## Issue Description\n\n";
+        $content .= $description . "\n\n";
+        
+        if ($include_system_info) {
+            $content .= "## System Information\n\n";
+            $content .= $this->get_system_info_for_report();
+        }
+        
+        if ($include_logs) {
+            $content .= "\n## Recent Error Logs (Last 24 Hours)\n\n";
+            $content .= $this->get_sanitized_logs_for_report();
+        }
+        
+        $content .= "\n---\n";
+        $content .= "*This issue was automatically generated from the SentinelWP plugin.*";
+        
+        return $content;
+    }
+    
+    /**
+     * Get system information for issue report
+     */
+    private function get_system_info_for_report() {
+        global $wp_version;
+        
+        $system_info = "```\n";
+        $system_info .= "WordPress Version: " . $wp_version . "\n";
+        $system_info .= "PHP Version: " . PHP_VERSION . "\n";
+        $system_info .= "Plugin Version: " . SENTINELWP_VERSION . "\n";
+        $system_info .= "Server Software: " . ($_SERVER['SERVER_SOFTWARE'] ?? 'Unknown') . "\n";
+        $system_info .= "Memory Limit: " . ini_get('memory_limit') . "\n";
+        $system_info .= "Max Execution Time: " . ini_get('max_execution_time') . "s\n";
+        $system_info .= "Upload Max Filesize: " . ini_get('upload_max_filesize') . "\n";
+        
+        // Plugin-specific information
+        $system_info .= "\nPlugin Status:\n";
+        $system_info .= "- Gemini API Key: " . (get_option('sentinelwp_gemini_api_key') ? 'Configured' : 'Not configured') . "\n";
+        $system_info .= "- Auto Scan: " . (get_option('sentinelwp_auto_scan_enabled', true) ? 'Enabled' : 'Disabled') . "\n";
+        $system_info .= "- Email Notifications: " . (get_option('sentinelwp_notification_email') ? 'Configured' : 'Not configured') . "\n";
+        
+        // Database status
+        $database_status = SentinelWP_Database::get_table_status();
+        $system_info .= "\nDatabase Tables:\n";
+        foreach ($database_status as $table => $exists) {
+            $system_info .= "- " . $table . ": " . ($exists ? 'OK' : 'Missing') . "\n";
+        }
+        
+        $system_info .= "```\n\n";
+        
+        return $system_info;
+    }
+    
+    /**
+     * Get sanitized logs for issue report
+     */
+    private function get_sanitized_logs_for_report() {
+        $logs_content = "```\n";
+        
+        try {
+            $log_file = SENTINELWP_PLUGIN_DIR . 'logs/sentinelwp-' . date('Y-m-d') . '.log';
+            
+            if (file_exists($log_file)) {
+                $log_lines = file($log_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+                $recent_lines = array_slice($log_lines, -20); // Last 20 lines
+                
+                foreach ($recent_lines as $line) {
+                    // Sanitize sensitive information
+                    $sanitized_line = preg_replace('/AIzaSy[A-Za-z0-9_-]{35}/', 'AIzaSy***API_KEY_HIDDEN***', $line);
+                    $sanitized_line = preg_replace('/\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/', 'XXX.XXX.XXX.XXX', $sanitized_line);
+                    $sanitized_line = preg_replace('/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/', 'email@hidden.com', $sanitized_line);
+                    
+                    $logs_content .= $sanitized_line . "\n";
+                }
+            } else {
+                $logs_content .= "No recent log file found.\n";
+            }
+        } catch (Exception $e) {
+            $logs_content .= "Error reading logs: " . $e->getMessage() . "\n";
+        }
+        
+        $logs_content .= "```\n\n";
+        
+        return $logs_content;
+    }
+    
+    /**
+     * Generate GitHub issue URL
+     */
+    private function generate_github_issue_url($issue_type, $title, $content) {
+        $repo_url = 'https://github.com/teguh02/SentinelWP';
+        
+        // Add type prefix to title
+        $type_prefixes = array(
+            'bug' => '[Bug]',
+            'feature' => '[Feature Request]',
+            'question' => '[Question]',
+            'documentation' => '[Documentation]'
+        );
+        
+        $prefixed_title = ($type_prefixes[$issue_type] ?? '[Issue]') . ' ' . $title;
+        
+        // Prepare labels based on issue type
+        $labels = array();
+        switch ($issue_type) {
+            case 'bug':
+                $labels[] = 'bug';
+                break;
+            case 'feature':
+                $labels[] = 'enhancement';
+                break;
+            case 'question':
+                $labels[] = 'question';
+                break;
+            case 'documentation':
+                $labels[] = 'documentation';
+                break;
+        }
+        $labels[] = 'auto-generated';
+        
+        // Build the GitHub issue URL
+        $params = array(
+            'title' => $prefixed_title,
+            'body' => $content,
+            'labels' => implode(',', $labels)
+        );
+        
+        return $repo_url . '/issues/new?' . http_build_query($params);
     }
 }
