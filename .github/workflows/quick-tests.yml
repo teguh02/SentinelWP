@@ -1,0 +1,82 @@
+name: Quick Tests
+
+on:
+  push:
+    branches: [ development ]
+    paths:
+      - 'includes/**'
+      - 'tests/**'
+      - 'sentinelwp.php'
+  workflow_dispatch:
+
+jobs:
+  quick-test:
+    runs-on: ubuntu-latest
+    name: Quick Test Suite
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: 8.1
+        extensions: json, mbstring
+        
+    - name: Quick syntax check
+      run: |
+        echo "🔍 Checking PHP syntax..."
+        find . -name "*.php" -not -path "./vendor/*" -exec php -l {} \; > syntax_check.log 2>&1
+        
+        if grep -q "Parse error\|Fatal error\|syntax error" syntax_check.log; then
+          echo "❌ Syntax errors found:"
+          cat syntax_check.log
+          exit 1
+        else
+          echo "✅ No syntax errors detected"
+        fi
+        
+    - name: Run tests
+      run: |
+        cd tests
+        echo "🧪 Running SentinelWP tests..."
+        
+        # Run tests and capture output
+        if php run-tests.php > quick_test_output.log 2>&1; then
+          echo "✅ Tests completed successfully"
+          cat quick_test_output.log
+        else
+          echo "❌ Tests failed"
+          cat quick_test_output.log
+          exit 1
+        fi
+        
+    - name: Test individual suites
+      run: |
+        cd tests
+        echo "🤖 Testing AI Recommendations..."
+        php test-ai-recommendations.php | tail -10
+        
+        echo ""
+        echo "🛡️ Testing Attack Detection..."
+        php test-attack-detection.php | tail -10
+        
+    - name: Check test coverage
+      run: |
+        cd tests
+        echo "📊 Test Coverage Summary:"
+        
+        # Count test methods
+        AI_TESTS=$(grep -c "public function test_\|private function test_" test-ai-recommendations.php || echo "0")
+        ATTACK_TESTS=$(grep -c "public function test_\|private function test_" test-attack-detection.php || echo "0")
+        
+        echo "- AI Recommendations: $AI_TESTS test methods"
+        echo "- Attack Detection: $ATTACK_TESTS test methods" 
+        echo "- Total Test Methods: $((AI_TESTS + ATTACK_TESTS))"
+        
+        # Check for required test files
+        if [ -f "fixtures/gemini-responses.json" ]; then
+          FIXTURE_SIZE=$(wc -c < fixtures/gemini-responses.json)
+          echo "- Test fixtures: ${FIXTURE_SIZE} bytes"
+        fi
