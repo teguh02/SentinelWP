@@ -256,24 +256,95 @@ class SentinelWP_Scanner {
      * ClamAV scan directory
      */
     private function clamav_scan_directory($directory, $context, $exclude = array()) {
+        SentinelWP_Logger::info('Starting ClamAV scan', array(
+            'directory' => $directory,
+            'context' => $context,
+            'exclude' => $exclude
+        ));
+        
         if (!function_exists('shell_exec')) {
+            SentinelWP_Logger::error('ClamAV scan failed: shell_exec function not available');
+            return;
+        }
+        
+        // Check ClamAV installation
+        $this->check_clamav_installation();
+        
+        if (!is_dir($directory)) {
+            SentinelWP_Logger::warning('ClamAV scan skipped: directory does not exist', array(
+                'directory' => $directory
+            ));
             return;
         }
         
         $escaped_dir = escapeshellarg($directory);
+        $start_time = microtime(true);
+        
+        // Check if ClamAV daemons are running
+        $clamd_check = shell_exec('pgrep clamd 2>&1');
+        SentinelWP_Logger::debug('ClamAV daemon check', array(
+            'clamd_running' => !empty($clamd_check),
+            'clamd_pids' => trim($clamd_check)
+        ));
         
         // Try clamdscan first (faster)
         $command = "clamdscan --multiscan --fdpass $escaped_dir 2>&1";
-        $output = shell_exec($command);
+        SentinelWP_Logger::info('Executing ClamAV command (clamdscan)', array(
+            'command' => $command,
+            'directory' => $directory
+        ));
         
-        if (empty($output) || strpos($output, 'ERROR') !== false) {
+        $output = shell_exec($command);
+        $scan_time = round(microtime(true) - $start_time, 2);
+        
+        SentinelWP_Logger::info('ClamAV clamdscan completed', array(
+            'scan_time_seconds' => $scan_time,
+            'output_length' => strlen($output),
+            'has_output' => !empty($output),
+            'output_preview' => substr($output, 0, 200) . (strlen($output) > 200 ? '...' : '')
+        ));
+        
+        // Check if clamdscan failed or had errors
+        if (empty($output) || strpos($output, 'ERROR') !== false || strpos($output, 'Can\'t connect to clamd') !== false) {
+            SentinelWP_Logger::warning('ClamAV clamdscan failed or had errors, falling back to clamscan', array(
+                'clamdscan_output' => $output,
+                'error_detected' => strpos($output, 'ERROR') !== false,
+                'connection_failed' => strpos($output, 'Can\'t connect to clamd') !== false
+            ));
+            
             // Fallback to clamscan
+            $start_time = microtime(true);
             $command = "clamscan -r --bell -i $escaped_dir 2>&1";
+            SentinelWP_Logger::info('Executing ClamAV fallback command (clamscan)', array(
+                'command' => $command,
+                'directory' => $directory
+            ));
+            
             $output = shell_exec($command);
+            $scan_time = round(microtime(true) - $start_time, 2);
+            
+            SentinelWP_Logger::info('ClamAV clamscan completed', array(
+                'scan_time_seconds' => $scan_time,
+                'output_length' => strlen($output),
+                'has_output' => !empty($output),
+                'output_preview' => substr($output, 0, 200) . (strlen($output) > 200 ? '...' : '')
+            ));
         }
         
         if (!empty($output)) {
+            SentinelWP_Logger::info('Processing ClamAV scan results', array(
+                'output_lines' => count(explode("\n", $output)),
+                'context' => $context
+            ));
             $this->parse_clamav_output($output, $context, $exclude);
+        } else {
+            SentinelWP_Logger::warning('ClamAV scan produced no output', array(
+                'directory' => $directory,
+                'context' => $context,
+                'shell_exec_available' => function_exists('shell_exec'),
+                'directory_exists' => is_dir($directory),
+                'directory_readable' => is_readable($directory)
+            ));
         }
     }
     
@@ -282,12 +353,33 @@ class SentinelWP_Scanner {
      */
     private function parse_clamav_output($output, $context, $exclude = array()) {
         $lines = explode("\n", $output);
+        $total_lines = count($lines);
+        $processed_lines = 0;
+        $found_infections = 0;
+        $excluded_files = 0;
         
-        foreach ($lines as $line) {
+        SentinelWP_Logger::info('Starting ClamAV output parsing', array(
+            'total_lines' => $total_lines,
+            'context' => $context,
+            'exclude_count' => count($exclude)
+        ));
+        
+        foreach ($lines as $line_number => $line) {
             $line = trim($line);
             
             if (empty($line)) {
                 continue;
+            }
+            
+            $processed_lines++;
+            
+            // Log sample of lines being processed (first 5, last 5, and any with "FOUND")
+            if ($line_number < 5 || $line_number >= $total_lines - 5 || strpos($line, 'FOUND') !== false) {
+                SentinelWP_Logger::debug('Processing ClamAV line', array(
+                    'line_number' => $line_number + 1,
+                    'line_content' => $line,
+                    'contains_found' => strpos($line, 'FOUND') !== false
+                ));
             }
             
             // Check for infected files
@@ -295,19 +387,33 @@ class SentinelWP_Scanner {
                 $file_path = trim($matches[1]);
                 $signature = trim($matches[2]);
                 
+                SentinelWP_Logger::info('ClamAV infection detected', array(
+                    'file_path' => $file_path,
+                    'signature' => $signature,
+                    'context' => $context
+                ));
+                
                 // Check if file is in excluded directory
                 $skip = false;
                 foreach ($exclude as $exclude_dir) {
                     if (strpos($file_path, DIRECTORY_SEPARATOR . $exclude_dir . DIRECTORY_SEPARATOR) !== false || 
                         strpos($file_path, DIRECTORY_SEPARATOR . $exclude_dir) === strlen($file_path) - strlen($exclude_dir) - 1) {
                         $skip = true;
+                        SentinelWP_Logger::info('ClamAV infection excluded', array(
+                            'file_path' => $file_path,
+                            'excluded_by' => $exclude_dir,
+                            'signature' => $signature
+                        ));
                         break;
                     }
                 }
                 
                 if ($skip) {
+                    $excluded_files++;
                     continue;
                 }
+                
+                $found_infections++;
                 
                 $this->add_security_issue(array(
                     'file_path' => $file_path,
@@ -317,8 +423,21 @@ class SentinelWP_Scanner {
                     'recommendation' => 'Remove or quarantine this file immediately.',
                     'context' => $context
                 ));
+                
+                SentinelWP_Logger::warning('Security issue added for ClamAV detection', array(
+                    'file_path' => $file_path,
+                    'signature' => $signature,
+                    'context' => $context
+                ));
             }
         }
+        
+        SentinelWP_Logger::info('ClamAV output parsing completed', array(
+            'total_lines_processed' => $processed_lines,
+            'infections_found' => $found_infections,
+            'infections_excluded' => $excluded_files,
+            'context' => $context
+        ));
     }
     
     /**
@@ -752,5 +871,104 @@ class SentinelWP_Scanner {
         
         SentinelWP_Logger::debug('Database schema validation passed');
         return true;
+    }
+    
+    /**
+     * Check ClamAV installation and log details
+     */
+    private function check_clamav_installation() {
+        SentinelWP_Logger::info('Checking ClamAV installation');
+        
+        if (!function_exists('shell_exec')) {
+            SentinelWP_Logger::error('Cannot check ClamAV: shell_exec not available');
+            return false;
+        }
+        
+        $binaries = array(
+            'clamdscan' => 'clamdscan --version 2>/dev/null',
+            'clamscan' => 'clamscan --version 2>/dev/null',
+            'clamd' => 'clamd --version 2>/dev/null',
+            'freshclam' => 'freshclam --version 2>/dev/null'
+        );
+        
+        $installation_status = array(
+            'binaries_found' => 0,
+            'total_binaries' => count($binaries),
+            'details' => array()
+        );
+        
+        foreach ($binaries as $binary => $command) {
+            SentinelWP_Logger::debug('Checking ClamAV binary', array('binary' => $binary));
+            
+            $start_time = microtime(true);
+            $output = shell_exec($command);
+            $execution_time = (microtime(true) - $start_time) * 1000;
+            
+            if (!empty($output)) {
+                $installation_status['binaries_found']++;
+                $version = trim(explode("\n", $output)[0]);
+                $installation_status['details'][$binary] = array(
+                    'available' => true,
+                    'version' => $version,
+                    'check_time_ms' => round($execution_time, 2)
+                );
+                
+                SentinelWP_Logger::info("ClamAV binary found: {$binary}", array(
+                    'version' => $version,
+                    'check_time_ms' => round($execution_time, 2)
+                ));
+            } else {
+                $installation_status['details'][$binary] = array(
+                    'available' => false,
+                    'check_time_ms' => round($execution_time, 2)
+                );
+                
+                SentinelWP_Logger::warning("ClamAV binary not found: {$binary}", array(
+                    'check_time_ms' => round($execution_time, 2)
+                ));
+            }
+        }
+        
+        // Check daemon status
+        $daemon_checks = array(
+            'pgrep clamd' => 'pgrep clamd 2>/dev/null',
+            'systemctl status' => 'systemctl status clamav-daemon 2>/dev/null | grep -q "active (running)"',
+            'netstat port 3310' => 'netstat -ln 2>/dev/null | grep -q ":3310"'
+        );
+        
+        $daemon_running = false;
+        foreach ($daemon_checks as $check_name => $command) {
+            $output = shell_exec($command);
+            if (!empty($output)) {
+                $daemon_running = true;
+                SentinelWP_Logger::info("ClamAV daemon detected via: {$check_name}");
+                break;
+            }
+        }
+        
+        if (!$daemon_running) {
+            SentinelWP_Logger::warning('ClamAV daemon not running - will use direct clamscan');
+        }
+        
+        // Check virus database
+        $db_check = shell_exec('find /var/lib/clamav /usr/local/share/clamav -name "*.cvd" -o -name "*.cld" 2>/dev/null | wc -l');
+        $db_files = (int) trim($db_check);
+        
+        SentinelWP_Logger::info('ClamAV virus database check', array(
+            'database_files_found' => $db_files,
+            'database_status' => $db_files > 0 ? 'available' : 'missing'
+        ));
+        
+        // Summary log
+        $overall_status = $installation_status['binaries_found'] > 0 ? 'installed' : 'not_installed';
+        SentinelWP_Logger::info('ClamAV installation check complete', array(
+            'overall_status' => $overall_status,
+            'binaries_found' => $installation_status['binaries_found'],
+            'daemon_running' => $daemon_running,
+            'virus_db_files' => $db_files,
+            'details' => $installation_status['details']
+        ));
+        
+        return $installation_status['binaries_found'] > 0;
     }
 }
