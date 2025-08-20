@@ -1,0 +1,2 @@
+[2025-08-20 01:11:28] ERROR: This is an error message | User: 0 | IP: unknown | Context: {"error_code":500} | Called from: debug-test.php:24 in error()
+[2025-08-20 01:11:28] ERROR: API Error from Gemini: Test API error | User: 0 | IP: unknown | Context: {"provider":"Gemini","error":"Test API error","timestamp":"2025-08-20T01:11:28+00:00","status_code":400,"response_body":"Bad request"} | Called from: class-logger.php:290 in error()

@@ -1,0 +1,26 @@
+[2025-08-20 01:11:28] INFO: Logging system test started | User: 0 | IP: unknown
+[2025-08-20 01:11:28] DEBUG: This is a debug message | User: 0 | IP: unknown | Context: {"test_data":"sample"}
+[2025-08-20 01:11:28] WARNING: This is a warning message | User: 0 | IP: unknown
+[2025-08-20 01:11:28] INFO: AI Generation: test_generation | User: 0 | IP: unknown | Context: {"action":"test_generation","timestamp":"2025-08-20T01:11:28+00:00","memory_usage":2097152,"memory_peak":2097152,"test_mode":true,"user_id":1}
+[2025-08-20 01:11:28] INFO: API Request to Gemini | User: 0 | IP: unknown | Context: {"provider":"Gemini","endpoint":"generateContent","request_size":24,"response_size":28,"timestamp":"2025-08-20T01:11:28+00:00","request_preview":"{\"prompt\":\"test prompt\"}","response_preview":"{\"response\":\"test response\"}"}
+[2025-08-20 01:11:28] DEBUG: Database INSERT on sentinelwp_ai_recommendations | User: 0 | IP: unknown | Context: {"operation":"INSERT","table":"sentinelwp_ai_recommendations","data_preview":"{\"title\":\"Test recommendation\",\"priority\":\"high\"}","timestamp":"2025-08-20T01:11:28+00:00"}
+[2025-08-20 01:14:13] INFO: AJAX request for AI recommendations received | User: 1 | IP: 127.0.0.1
+[2025-08-20 01:14:13] DEBUG: Starting AI recommendations generation via AJAX | User: 1 | IP: 127.0.0.1
+[2025-08-20 01:14:13] INFO: AI Recommendations generation started | User: 1 | IP: 127.0.0.1
+[2025-08-20 01:14:13] DEBUG: API key found, proceeding with data gathering | User: 1 | IP: 127.0.0.1 | Context: {"api_key_length":39,"api_key_preview":"AIzaSyCVsM..."}
+[2025-08-20 01:14:13] DEBUG: Starting system data gathering | User: 1 | IP: 127.0.0.1
+[2025-08-20 01:15:12] INFO: AJAX request for AI recommendations received | User: 1 | IP: 127.0.0.1
+[2025-08-20 01:15:12] DEBUG: Starting AI recommendations generation via AJAX | User: 1 | IP: 127.0.0.1
+[2025-08-20 01:15:12] INFO: AI Recommendations generation started | User: 1 | IP: 127.0.0.1
+[2025-08-20 01:15:12] DEBUG: API key found, proceeding with data gathering | User: 1 | IP: 127.0.0.1 | Context: {"api_key_length":39,"api_key_preview":"AIzaSyCVsM..."}
+[2025-08-20 01:15:12] DEBUG: Starting system data gathering | User: 1 | IP: 127.0.0.1
+[2025-08-20 01:15:44] INFO: AJAX request for AI recommendations received | User: 1 | IP: 127.0.0.1
+[2025-08-20 01:15:44] DEBUG: Starting AI recommendations generation via AJAX | User: 1 | IP: 127.0.0.1
+[2025-08-20 01:15:44] INFO: AI Recommendations generation started | User: 1 | IP: 127.0.0.1
+[2025-08-20 01:15:44] DEBUG: API key found, proceeding with data gathering | User: 1 | IP: 127.0.0.1 | Context: {"api_key_length":39,"api_key_preview":"AIzaSyCVsM..."}
+[2025-08-20 01:15:44] DEBUG: Starting system data gathering | User: 1 | IP: 127.0.0.1
+[2025-08-20 01:18:29] INFO: AJAX request for AI recommendations received | User: 1 | IP: 127.0.0.1
+[2025-08-20 01:18:29] DEBUG: Starting AI recommendations generation via AJAX | User: 1 | IP: 127.0.0.1
+[2025-08-20 01:18:29] INFO: AI Recommendations generation started | User: 1 | IP: 127.0.0.1
+[2025-08-20 01:18:29] DEBUG: API key found, proceeding with data gathering | User: 1 | IP: 127.0.0.1 | Context: {"api_key_length":39,"api_key_preview":"AIzaSyCVsM..."}
+[2025-08-20 01:18:29] DEBUG: Starting system data gathering | User: 1 | IP: 127.0.0.1
