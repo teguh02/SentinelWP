@@ -5,7 +5,7 @@
  * Description: Hybrid security scanner for WordPress with ClamAV integration and AI-powered analysis using Google Gemini API.
  * Version: 1.0.1
  * Author: Teguh Rijanandi
- * Author URI: https://github.com/teguh02/SentinelWP
+ * Author URI: https://www.linkedin.com/in/teguhrijanandi
  * License: GPL v2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: sentinelwp
