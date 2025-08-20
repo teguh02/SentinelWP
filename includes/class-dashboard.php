@@ -1171,6 +1171,7 @@ class SentinelWP_Dashboard {
             'sentinelwp_scan_time' => sanitize_text_field($_POST['scan_time'] ?? '02:00'),
             'sentinelwp_notify_scan_results' => isset($_POST['notify_scan_results']) ? 1 : 0,
             'sentinelwp_notify_threats' => isset($_POST['notify_threats']) ? 1 : 0,
+            'sentinelwp_notify_under_attack' => isset($_POST['notify_under_attack']) ? 1 : 0,
             'sentinelwp_notification_email' => sanitize_email($_POST['notification_email'] ?? ''),
             'sentinelwp_telegram_enabled' => isset($_POST['telegram_enabled']) ? 1 : 0,
             'sentinelwp_telegram_bot_token' => sanitize_text_field($_POST['telegram_bot_token'] ?? ''),

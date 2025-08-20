@@ -597,8 +597,8 @@ class SentinelWP_Notifications {
      * Send attack notification
      */
     public function send_attack_notification($event_type, $ip_address, $description, $severity, $additional_data = array()) {
-        // Check if attack notifications are enabled
-        if (!get_option('sentinelwp_notify_attacks', true)) {
+        // Check if under attack notifications are enabled
+        if (!get_option('sentinelwp_notify_under_attack', true)) {
             return;
         }
         
