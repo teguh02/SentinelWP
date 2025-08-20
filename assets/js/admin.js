@@ -57,7 +57,14 @@
                 .text(sentinelwp_ajax.strings.scanning);
             
             // Show progress
-            $('#scan-progress').show();
+            $('#scan-progress').show().addClass('active');
+            
+            // Initialize progress bar immediately
+            $('.progress-fill').css({
+                'width': '0%',
+                'background': 'linear-gradient(90deg, #0073aa, #00a0d2)'
+            });
+            
             SentinelWP.updateProgress(0, 'Initializing scan...');
             
             $.ajax({
@@ -107,22 +114,34 @@
                         .text(originalText);
                     
                     setTimeout(() => {
-                        $('#scan-progress').hide();
+                        $('#scan-progress').hide().removeClass('active');
                     }, 3000);
                 }
             });
             
-            // Simulate progress updates
-            SentinelWP.simulateProgress();
+            // Simulate progress updates (start after a short delay)
+            setTimeout(() => {
+                SentinelWP.simulateProgress();
+            }, 500);
         },
         
         simulateProgress: function() {
+            console.log('SentinelWP: Starting progress simulation');
+            
             let progress = 0;
+            let stepCount = 0;
+            
             const interval = setInterval(() => {
-                progress += Math.random() * 15;
-                if (progress > 90) {
-                    progress = 90;
+                // Increment progress with some randomness
+                const increment = Math.random() * 15;
+                progress = Math.min(progress + increment, 90);
+                stepCount++;
+                
+                console.log('SentinelWP: Progress step ' + stepCount + ' - ' + progress + '%');
+                
+                if (progress >= 90) {
                     clearInterval(interval);
+                    console.log('SentinelWP: Progress simulation completed at 90%');
                 }
                 
                 const messages = [
@@ -131,21 +150,42 @@
                     'Analyzing plugins...',
                     'Scanning uploads directory...',
                     'Validating file integrity...',
-                    'Detecting suspicious patterns...'
+                    'Detecting suspicious patterns...',
+                    'Running heuristic analysis...',
+                    'Checking file permissions...'
                 ];
                 
                 const randomMessage = messages[Math.floor(Math.random() * messages.length)];
                 SentinelWP.updateProgress(progress, randomMessage);
-            }, 1000);
+            }, 1200);
+            
+            // Store interval for cleanup if needed
+            SentinelWP.progressInterval = interval;
         },
         
         updateProgress: function(percent, message) {
-            $('.progress-fill').css('width', percent + '%');
-            $('#progress-text').text(message);
+            console.log('SentinelWP: Updating progress to ' + percent + '% - ' + message);
             
+            const $progressFill = $('.progress-fill');
+            const $progressText = $('#progress-text');
+            
+            // Debug logging
+            console.log('Progress fill element found:', $progressFill.length);
+            console.log('Progress text element found:', $progressText.length);
+            
+            // Update the progress bar width
+            $progressFill.css('width', percent + '%');
+            $progressText.text(message);
+            
+            // Change color when complete
             if (percent >= 100) {
-                $('.progress-fill').css('background', '#28a745');
+                $progressFill.css('background', 'linear-gradient(90deg, #28a745, #5cb85c)');
+            } else {
+                $progressFill.css('background', 'linear-gradient(90deg, #0073aa, #00a0d2)');
             }
+            
+            // Force a repaint
+            $progressFill[0].offsetHeight;
         },
         
         resolveIssue: function(e) {

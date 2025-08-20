@@ -197,12 +197,32 @@
     border-radius: 10px;
     overflow: hidden;
     margin: 15px 0;
+    border: 1px solid #ddd;
+    position: relative;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
 }
 
 .progress-fill {
     height: 100%;
     background: linear-gradient(90deg, #0073aa, #00a0d2);
     transition: width 0.3s ease;
+    min-width: 0;
+    width: 0%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    border-radius: inherit;
+    box-shadow: 0 1px 0 rgba(255,255,255,0.3) inset;
+}
+
+/* Progress bar animation */
+.progress-fill:not([style*="width: 0"]) {
+    animation: progress-pulse 2s infinite;
+}
+
+@keyframes progress-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.8; }
 }
 
 .progress-info {
@@ -951,4 +971,30 @@
     content: "🕐";
     margin-right: 3px;
     font-size: 10px;
+}
+
+/* Scan Progress Card */
+#scan-progress {
+    margin-top: 20px;
+    border: 2px solid #0073aa;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+#scan-progress .sentinelwp-card-header {
+    background: linear-gradient(90deg, #0073aa, #00a0d2);
+    color: white;
+}
+
+#scan-progress .sentinelwp-card-header h3 {
+    color: white;
+    margin: 0;
+}
+
+#scan-progress.active {
+    animation: scan-highlight 2s infinite alternate;
+}
+
+@keyframes scan-highlight {
+    0% { border-color: #0073aa; }
+    100% { border-color: #00a0d2; }
 }

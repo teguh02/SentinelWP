@@ -126,9 +126,14 @@ class SentinelWP_Dashboard {
                 <div class="sentinelwp-card">
                     <div class="sentinelwp-card-header">
                         <h3><?php _e('Last Scan', 'sentinelwp'); ?></h3>
-                        <button id="run-scan-btn" class="button button-primary">
-                            <?php _e('Run Scan Now', 'sentinelwp'); ?>
-                        </button>
+                        <div>
+                            <button id="run-scan-btn" class="button button-primary">
+                                <?php _e('Run Scan Now', 'sentinelwp'); ?>
+                            </button>
+                            <button id="test-progress-btn" class="button button-secondary" style="margin-left: 10px;">
+                                <?php _e('Test Progress', 'sentinelwp'); ?>
+                            </button>
+                        </div>
                     </div>
                     <div class="sentinelwp-card-body">
                         <?php if (isset($stats['last_scan']) && $stats['last_scan']): ?>
@@ -175,7 +180,7 @@ class SentinelWP_Dashboard {
                 </div>
                 <div class="sentinelwp-card-body">
                     <div class="progress-bar">
-                        <div class="progress-fill" style="width: 0%"></div>
+                        <div class="progress-fill" style="width: 0%; background: linear-gradient(90deg, #0073aa, #00a0d2);"></div>
                     </div>
                     <div class="progress-info">
                         <span id="progress-text"><?php _e('Initializing scan...', 'sentinelwp'); ?></span>
@@ -219,6 +224,42 @@ class SentinelWP_Dashboard {
                         $progress.hide();
                     }
                 });
+            });
+            
+            // Test progress button for debugging
+            $('#test-progress-btn').click(function() {
+                var $progress = $('#scan-progress');
+                console.log('SentinelWP: Test progress button clicked');
+                
+                // Show progress bar
+                $progress.show();
+                
+                // Initialize progress bar
+                $('.progress-fill').css({
+                    'width': '0%',
+                    'background': 'linear-gradient(90deg, #0073aa, #00a0d2)'
+                });
+                
+                // Test progress updates
+                let testProgress = 0;
+                const testInterval = setInterval(() => {
+                    testProgress += 20;
+                    if (testProgress > 100) {
+                        testProgress = 100;
+                        clearInterval(testInterval);
+                        
+                        setTimeout(() => {
+                            $progress.hide();
+                        }, 2000);
+                    }
+                    
+                    $('.progress-fill').css('width', testProgress + '%');
+                    $('#progress-text').text('Testing progress: ' + testProgress + '%');
+                    
+                    if (testProgress >= 100) {
+                        $('.progress-fill').css('background', 'linear-gradient(90deg, #28a745, #5cb85c)');
+                    }
+                }, 500);
             });
         });
         </script>
