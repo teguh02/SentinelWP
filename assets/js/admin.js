@@ -857,9 +857,147 @@
         );
     };
     
+    // IDS/IPS functionality
+    SentinelWP.idsIps = {
+        
+        init: function() {
+            this.bindEvents();
+            this.initAutoRefresh();
+        },
+        
+        bindEvents: function() {
+            // Unblock IP buttons
+            $(document).on('click', '.unblock-ip-btn', this.unblockIP);
+            
+            // Clear logs button
+            $(document).on('click', '.clear-logs-btn', this.clearLogs);
+            
+            // Refresh blocked IPs
+            $(document).on('click', '#refresh-blocked-ips', this.refreshBlockedIPs);
+        },
+        
+        unblockIP: function(e) {
+            e.preventDefault();
+            
+            var ip = $(this).data('ip');
+            if (!confirm('Are you sure you want to unblock IP: ' + ip + '?')) {
+                return;
+            }
+            
+            var button = $(this);
+            button.prop('disabled', true).text('Unblocking...');
+            
+            $.ajax({
+                url: sentinelwp_ajax.ajax_url,
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    action: 'sentinelwp_unblock_ip',
+                    ip: ip,
+                    nonce: sentinelwp_ajax.nonce
+                },
+                success: function(response) {
+                    if (response.success) {
+                        button.closest('tr').fadeOut(400, function() {
+                            $(this).remove();
+                            if ($('.blocked-ips-table tbody tr').length === 0) {
+                                $('.blocked-ips-table').html('<p>No IP addresses are currently blocked.</p>');
+                            }
+                        });
+                    } else {
+                        alert('Failed to unblock IP: ' + response.data);
+                        button.prop('disabled', false).text('Unblock');
+                    }
+                },
+                error: function() {
+                    alert('Error communicating with server');
+                    button.prop('disabled', false).text('Unblock');
+                }
+            });
+        },
+        
+        clearLogs: function(e) {
+            e.preventDefault();
+            
+            if (!confirm('Are you sure you want to clear all IDS logs? This action cannot be undone.')) {
+                return;
+            }
+            
+            var button = $(this);
+            button.prop('disabled', true).text('Clearing...');
+            
+            $.ajax({
+                url: sentinelwp_ajax.ajax_url,
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    action: 'sentinelwp_clear_ids_logs',
+                    nonce: sentinelwp_ajax.nonce
+                },
+                success: function(response) {
+                    if (response.success) {
+                        $('.intrusion-logs-table').html('<p>No intrusion attempts recorded yet.</p>');
+                        button.prop('disabled', false).text('Clear Logs');
+                    } else {
+                        alert('Failed to clear logs: ' + response.data);
+                        button.prop('disabled', false).text('Clear Logs');
+                    }
+                },
+                error: function() {
+                    alert('Error communicating with server');
+                    button.prop('disabled', false).text('Clear Logs');
+                }
+            });
+        },
+        
+        refreshBlockedIPs: function(e) {
+            e.preventDefault();
+            
+            var button = $(this);
+            button.prop('disabled', true).text('Refreshing...');
+            
+            $.ajax({
+                url: sentinelwp_ajax.ajax_url,
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    action: 'sentinelwp_get_blocked_ips',
+                    nonce: sentinelwp_ajax.nonce
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // Reload the page to show updated data
+                        location.reload();
+                    } else {
+                        alert('Failed to refresh data: ' + response.data);
+                    }
+                    button.prop('disabled', false).text('Refresh');
+                },
+                error: function() {
+                    alert('Error communicating with server');
+                    button.prop('disabled', false).text('Refresh');
+                }
+            });
+        },
+        
+        initAutoRefresh: function() {
+            // Auto-refresh blocked IPs every 30 seconds if on IDS/IPS page
+            if (window.location.href.indexOf('sentinelwp-ids-ips') !== -1) {
+                setInterval(function() {
+                    SentinelWP.idsIps.refreshBlockedIPs({preventDefault: function(){}});
+                }, 30000);
+            }
+        }
+    };
+    
     // Initialize when document is ready
     $(document).ready(function() {
         SentinelWP.init();
+        
+        // Initialize IDS/IPS functionality if on IDS/IPS page
+        if (window.location.href.indexOf('sentinelwp-ids-ips') !== -1) {
+            SentinelWP.idsIps.init();
+        }
         
         // Initialize auto refresh if enabled
         if (sentinelwp_ajax.auto_refresh) {

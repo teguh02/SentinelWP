@@ -91,6 +91,7 @@ class SentinelWP {
         require_once SENTINELWP_PLUGIN_PATH . 'includes/class-ai-advisor.php';
         require_once SENTINELWP_PLUGIN_PATH . 'includes/class-notifications.php';
         require_once SENTINELWP_PLUGIN_PATH . 'includes/class-attack-detector.php';
+        require_once SENTINELWP_PLUGIN_PATH . 'includes/class-ids-ips.php';
         require_once SENTINELWP_PLUGIN_PATH . 'includes/helpers.php';
     }
     
@@ -105,6 +106,7 @@ class SentinelWP {
         SentinelWP_AI_Advisor::instance();
         SentinelWP_Notifications::instance();
         SentinelWP_Attack_Detector::instance();
+        SentinelWP_IDS_IPS::instance();
     }
     
     /**
@@ -191,6 +193,15 @@ class SentinelWP {
         
         add_submenu_page(
             'sentinelwp',
+            __('IDS/IPS Security', 'sentinelwp'),
+            __('IDS/IPS', 'sentinelwp'),
+            'manage_options',
+            'sentinelwp-ids-ips',
+            array($this, 'ids_ips_page')
+        );
+        
+        add_submenu_page(
+            'sentinelwp',
             __('Settings', 'sentinelwp'),
             __('Settings', 'sentinelwp'),
             'manage_options',
@@ -261,6 +272,13 @@ class SentinelWP {
      */
     public function ai_advisor_page() {
         SentinelWP_Dashboard::render_ai_advisor();
+    }
+    
+    /**
+     * IDS/IPS page callback
+     */
+    public function ids_ips_page() {
+        SentinelWP_Dashboard::render_ids_ips();
     }
     
     /**
@@ -369,7 +387,10 @@ class SentinelWP {
             'sentinelwp_notification_email' => get_option('admin_email'),
             'sentinelwp_telegram_enabled' => false,
             'sentinelwp_gemini_enabled' => false,
-            'sentinelwp_gemini_model' => 'gemini-2.5-flash'
+            'sentinelwp_gemini_model' => 'gemini-2.5-flash',
+            'sentinelwp_ids_enabled' => true,
+            'sentinelwp_ips_enabled' => true,
+            'sentinelwp_ids_block_duration' => 10
         );
         
         foreach ($defaults as $key => $value) {
@@ -406,7 +427,10 @@ class SentinelWP {
             'sentinelwp_telegram_chat_id',
             'sentinelwp_gemini_enabled',
             'sentinelwp_gemini_api_key',
-            'sentinelwp_gemini_model'
+            'sentinelwp_gemini_model',
+            'sentinelwp_ids_enabled',
+            'sentinelwp_ips_enabled',
+            'sentinelwp_ids_block_duration'
         );
         
         foreach ($options as $option) {

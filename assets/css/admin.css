@@ -998,3 +998,87 @@
     0% { border-color: #0073aa; }
     100% { border-color: #00a0d2; }
 }
+
+/* IDS/IPS Styles */
+.ids-ips-status .status-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.ids-ips-status .status-item:last-child {
+    border-bottom: none;
+}
+
+.status-value.enabled {
+    color: #46b450;
+    font-weight: bold;
+}
+
+.status-value.disabled {
+    color: #dc3232;
+    font-weight: bold;
+}
+
+.attack-type {
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: white;
+}
+
+.attack-type-brute_force_login {
+    background-color: #dc3232;
+}
+
+.attack-type-sql_injection {
+    background-color: #ff6900;
+}
+
+.attack-type-xss_attempt {
+    background-color: #ffb900;
+}
+
+.attack-type-xmlrpc_flood {
+    background-color: #826eb4;
+}
+
+.attack-type-ip_blocked {
+    background-color: #555;
+}
+
+.blocked-ips-table table,
+.intrusion-logs-table table {
+    margin-top: 10px;
+}
+
+.ids-ips-stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 15px;
+}
+
+.ids-ips-stats .stat-item {
+    text-align: center;
+    padding: 15px;
+    background: white;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+/* Responsive design for IDS/IPS stats */
+@media (max-width: 768px) {
+    .ids-ips-stats-grid {
+        grid-template-columns: 1fr;
+    }
+}
