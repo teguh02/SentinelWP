@@ -3,7 +3,7 @@
  * Plugin Name: SentinelWP - Hybrid Security Scanner
  * Plugin URI: https://github.com/teguh02/SentinelWP
  * Description: Hybrid security scanner for WordPress with ClamAV integration and AI-powered analysis using Google Gemini API.
- * Version: 1.0.0
+ * Version: 1.0.1
  * Author: Teguh Rijanandi
  * Author URI: https://github.com/teguh02/SentinelWP
  * License: GPL v2 or later
