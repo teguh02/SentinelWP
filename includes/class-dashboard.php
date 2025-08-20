@@ -35,6 +35,8 @@ class SentinelWP_Dashboard {
         add_action('wp_ajax_sentinelwp_isolate_issue', array($this, 'ajax_isolate_issue'));
         add_action('wp_ajax_sentinelwp_save_settings', array($this, 'ajax_save_settings'));
         add_action('wp_ajax_sentinelwp_update_ai_recommendation', array($this, 'ajax_update_ai_recommendation'));
+        add_action('wp_ajax_sentinelwp_check_database', array($this, 'ajax_check_database'));
+        add_action('wp_ajax_sentinelwp_migrate_database', array($this, 'ajax_migrate_database'));
     }
     
     /**
@@ -634,6 +636,9 @@ class SentinelWP_Dashboard {
                 <a href="?page=sentinelwp-settings&tab=gemini" class="nav-tab <?php echo $current_tab == 'gemini' ? 'nav-tab-active' : ''; ?>">
                     <?php _e('Gemini AI', 'sentinelwp'); ?>
                 </a>
+                <a href="?page=sentinelwp-settings&tab=database" class="nav-tab <?php echo $current_tab == 'database' ? 'nav-tab-active' : ''; ?>">
+                    <?php _e('Database', 'sentinelwp'); ?>
+                </a>
             </nav>
             
             <form id="sentinelwp-settings-form" method="post">
@@ -750,11 +755,45 @@ class SentinelWP_Dashboard {
                 </div>
                 <?php endif; ?>
                 
+                <?php if ($current_tab == 'database'): ?>
+                <div class="tab-content">
+                    <div class="notice notice-info">
+                        <p><?php _e('Database management tools for troubleshooting table issues.', 'sentinelwp'); ?></p>
+                    </div>
+                    
+                    <div id="database-status" style="margin: 20px 0;">
+                        <h3><?php _e('Database Status', 'sentinelwp'); ?></h3>
+                        <div id="table-status-container">
+                            <button type="button" id="check-database-btn" class="button">
+                                <?php _e('Check Database Tables', 'sentinelwp'); ?>
+                            </button>
+                            <div id="table-status-results" style="margin-top: 10px;"></div>
+                        </div>
+                    </div>
+                    
+                    <div id="database-migration" style="margin: 20px 0; border-top: 1px solid #ccd0d4; padding-top: 20px;">
+                        <h3><?php _e('Database Migration', 'sentinelwp'); ?></h3>
+                        <p><?php _e('If tables are missing or corrupted, you can recreate them:', 'sentinelwp'); ?></p>
+                        <div style="margin: 15px 0;">
+                            <button type="button" id="migrate-database-btn" class="button button-secondary">
+                                <?php _e('Recreate Database Tables', 'sentinelwp'); ?>
+                            </button>
+                            <p class="description" style="color: #d63638; margin-top: 5px;">
+                                <?php _e('Warning: This will recreate all plugin tables. Existing data will be preserved where possible.', 'sentinelwp'); ?>
+                            </p>
+                        </div>
+                        <div id="migration-results" style="margin-top: 10px;"></div>
+                    </div>
+                </div>
+                <?php endif; ?>
+                
+                <?php if ($current_tab != 'database'): ?>
                 <p class="submit">
                     <button type="submit" class="button-primary" id="save-settings-btn">
                         <?php _e('Save Settings', 'sentinelwp'); ?>
                     </button>
                 </p>
+                <?php endif; ?>
             </form>
         </div>
         
@@ -784,6 +823,95 @@ class SentinelWP_Dashboard {
                     },
                     complete: function() {
                         $btn.prop('disabled', false).text('<?php _e('Save Settings', 'sentinelwp'); ?>');
+                    }
+                });
+            });
+            
+            // Database operations
+            $('#check-database-btn').click(function() {
+                var $btn = $(this);
+                var $results = $('#table-status-results');
+                
+                $btn.prop('disabled', true).text('Checking...');
+                $results.html('<div class="spinner is-active" style="float: none; margin: 0;"></div>');
+                
+                $.ajax({
+                    url: sentinelwp_ajax.ajax_url,
+                    type: 'POST',
+                    data: {
+                        action: 'sentinelwp_check_database',
+                        nonce: sentinelwp_ajax.nonce
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            var html = '<div class="notice notice-success"><p><strong>Database Check Results:</strong></p><ul>';
+                            $.each(response.data.status, function(table, exists) {
+                                var status = exists ? '<span style="color: green;">✓ Exists</span>' : '<span style="color: red;">✗ Missing</span>';
+                                html += '<li>' + table + ': ' + status + '</li>';
+                            });
+                            html += '</ul></div>';
+                            $results.html(html);
+                        } else {
+                            $results.html('<div class="notice notice-error"><p>Error: ' + response.data + '</p></div>');
+                        }
+                    },
+                    error: function() {
+                        $results.html('<div class="notice notice-error"><p>Failed to check database status.</p></div>');
+                    },
+                    complete: function() {
+                        $btn.prop('disabled', false).text('Check Database Tables');
+                    }
+                });
+            });
+            
+            $('#migrate-database-btn').click(function() {
+                var $btn = $(this);
+                var $results = $('#migration-results');
+                
+                if (!confirm('Are you sure you want to recreate the database tables? This action cannot be undone.')) {
+                    return;
+                }
+                
+                $btn.prop('disabled', true).text('Migrating...');
+                $results.html('<div class="spinner is-active" style="float: none; margin: 0;"></div>');
+                
+                $.ajax({
+                    url: sentinelwp_ajax.ajax_url,
+                    type: 'POST',
+                    data: {
+                        action: 'sentinelwp_migrate_database',
+                        nonce: sentinelwp_ajax.nonce
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            var html = '<div class="notice notice-success"><p><strong>Migration Complete!</strong></p>';
+                            if (response.data.before) {
+                                html += '<p><strong>Before:</strong></p><ul>';
+                                $.each(response.data.before, function(table, exists) {
+                                    var status = exists ? '<span style="color: green;">✓</span>' : '<span style="color: red;">✗</span>';
+                                    html += '<li>' + table + ': ' + status + '</li>';
+                                });
+                                html += '</ul>';
+                            }
+                            if (response.data.after) {
+                                html += '<p><strong>After:</strong></p><ul>';
+                                $.each(response.data.after, function(table, exists) {
+                                    var status = exists ? '<span style="color: green;">✓</span>' : '<span style="color: red;">✗</span>';
+                                    html += '<li>' + table + ': ' + status + '</li>';
+                                });
+                                html += '</ul>';
+                            }
+                            html += '</div>';
+                            $results.html(html);
+                        } else {
+                            $results.html('<div class="notice notice-error"><p>Migration failed: ' + response.data + '</p></div>');
+                        }
+                    },
+                    error: function() {
+                        $results.html('<div class="notice notice-error"><p>Failed to migrate database.</p></div>');
+                    },
+                    complete: function() {
+                        $btn.prop('disabled', false).text('Recreate Database Tables');
                     }
                 });
             });
@@ -1197,5 +1325,75 @@ class SentinelWP_Dashboard {
         }
         </style>
         <?php
+    }
+    
+    /**
+     * AJAX handler for checking database status
+     */
+    public function ajax_check_database() {
+        check_ajax_referer('sentinelwp_nonce', 'nonce');
+        
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error('Insufficient permissions');
+        }
+        
+        try {
+            $status = SentinelWP_Database::get_table_status();
+            SentinelWP_Logger::info('Database status checked via AJAX', $status['summary']);
+            
+            wp_send_json_success($status);
+            
+        } catch (Exception $e) {
+            SentinelWP_Logger::error('Database status check failed', array(
+                'error' => $e->getMessage()
+            ));
+            wp_send_json_error('Failed to check database status: ' . $e->getMessage());
+        }
+    }
+    
+    /**
+     * AJAX handler for database migration
+     */
+    public function ajax_migrate_database() {
+        check_ajax_referer('sentinelwp_nonce', 'nonce');
+        
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error('Insufficient permissions');
+        }
+        
+        try {
+            SentinelWP_Logger::warning('Database migration started by user', array(
+                'user_id' => get_current_user_id()
+            ));
+            
+            // Check current status first
+            $status_before = SentinelWP_Database::get_table_status();
+            
+            // Run migration
+            $migration_result = SentinelWP_Database::create_tables();
+            
+            // Check status after migration
+            $status_after = SentinelWP_Database::get_table_status();
+            
+            SentinelWP_Logger::info('Database migration completed', array(
+                'before' => $status_before['summary'],
+                'after' => $status_after['summary'],
+                'migration_result' => $migration_result
+            ));
+            
+            wp_send_json_success(array(
+                'message' => 'Database migration completed successfully',
+                'status_before' => $status_before,
+                'status_after' => $status_after,
+                'migration_result' => $migration_result
+            ));
+            
+        } catch (Exception $e) {
+            SentinelWP_Logger::error('Database migration failed', array(
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ));
+            wp_send_json_error('Database migration failed: ' . $e->getMessage());
+        }
     }
 }

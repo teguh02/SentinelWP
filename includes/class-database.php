@@ -598,4 +598,95 @@ class SentinelWP_Database {
             $wpdb->prepare("DELETE FROM $table WHERE generated_at < %s AND status = 'dismissed'", $date)
         );
     }
+    
+    /**
+     * Check if all required tables exist
+     */
+    public static function tables_exist() {
+        global $wpdb;
+        
+        $required_tables = array(
+            $wpdb->prefix . 'sentinelwp_scans',
+            $wpdb->prefix . 'sentinelwp_issues',
+            $wpdb->prefix . 'sentinelwp_logs',
+            $wpdb->prefix . 'sentinelwp_settings',
+            $wpdb->prefix . 'sentinelwp_ai_recommendations'
+        );
+        
+        $existing_tables = array();
+        $missing_tables = array();
+        
+        foreach ($required_tables as $table) {
+            $table_exists = $wpdb->get_var($wpdb->prepare(
+                "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = %s AND table_name = %s",
+                DB_NAME,
+                $table
+            ));
+            
+            if ($table_exists) {
+                $existing_tables[] = $table;
+            } else {
+                $missing_tables[] = $table;
+            }
+        }
+        
+        return array(
+            'all_exist' => empty($missing_tables),
+            'existing' => $existing_tables,
+            'missing' => $missing_tables,
+            'total_required' => count($required_tables),
+            'total_existing' => count($existing_tables)
+        );
+    }
+    
+    /**
+     * Get table status information
+     */
+    public static function get_table_status() {
+        global $wpdb;
+        
+        $tables_info = self::tables_exist();
+        $table_status = array();
+        
+        foreach ($tables_info['existing'] as $table) {
+            $row_count = $wpdb->get_var("SELECT COUNT(*) FROM $table");
+            $table_status[] = array(
+                'name' => $table,
+                'exists' => true,
+                'row_count' => $row_count,
+                'status' => 'OK'
+            );
+        }
+        
+        foreach ($tables_info['missing'] as $table) {
+            $table_status[] = array(
+                'name' => $table,
+                'exists' => false,
+                'row_count' => 0,
+                'status' => 'MISSING'
+            );
+        }
+        
+        return array(
+            'summary' => $tables_info,
+            'details' => $table_status
+        );
+    }
+    
+    /**
+     * Force recreate all tables (for migration/reset)
+     */
+    public static function recreate_tables() {
+        SentinelWP_Logger::warning('Starting database table recreation (destructive operation)');
+        
+        // Drop existing tables first
+        self::drop_tables();
+        
+        // Create tables again
+        $result = self::create_tables();
+        
+        SentinelWP_Logger::info('Database table recreation completed');
+        
+        return $result;
+    }
 }

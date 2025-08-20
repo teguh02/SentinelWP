@@ -627,6 +627,138 @@ class SentinelWP_AI_Advisor {
     }
     
     /**
+     * Gather system data for AI analysis
+     */
+    private function gather_system_data() {
+        SentinelWP_Logger::debug('Starting data collection for AI analysis');
+        
+        $data = array();
+        
+        // Get WordPress information
+        $data['wordpress_info'] = array(
+            'version' => get_bloginfo('version'),
+            'site_url' => get_site_url(),
+            'home_url' => get_home_url(),
+            'admin_email' => get_option('admin_email'),
+            'active_theme' => wp_get_theme()->get('Name'),
+            'theme_version' => wp_get_theme()->get('Version'),
+            'active_plugins' => array()
+        );
+        
+        // Get active plugins
+        if (function_exists('get_plugins') && function_exists('is_plugin_active')) {
+            $all_plugins = get_plugins();
+            foreach ($all_plugins as $plugin_path => $plugin_info) {
+                if (is_plugin_active($plugin_path)) {
+                    $data['wordpress_info']['active_plugins'][] = array(
+                        'name' => $plugin_info['Name'],
+                        'version' => $plugin_info['Version']
+                    );
+                }
+            }
+        }
+        
+        SentinelWP_Logger::debug('WordPress info collected', array(
+            'version' => $data['wordpress_info']['version'],
+            'plugin_count' => count($data['wordpress_info']['active_plugins'])
+        ));
+        
+        // Get security statistics from database
+        global $wpdb;
+        $data['security_stats'] = array(
+            'total_issues' => 0,
+            'unresolved_issues' => 0,
+            'critical_issues' => 0,
+            'last_scan_date' => null
+        );
+        
+        try {
+            // Get issue statistics
+            $table_name = $wpdb->prefix . 'sentinelwp_issues';
+            $total_issues = $wpdb->get_var("SELECT COUNT(*) FROM {$table_name}");
+            $unresolved_issues = $wpdb->get_var("SELECT COUNT(*) FROM {$table_name} WHERE resolved = 0");
+            $critical_issues = $wpdb->get_var("SELECT COUNT(*) FROM {$table_name} WHERE severity = 'critical'");
+            
+            $data['security_stats']['total_issues'] = (int) $total_issues;
+            $data['security_stats']['unresolved_issues'] = (int) $unresolved_issues;
+            $data['security_stats']['critical_issues'] = (int) $critical_issues;
+            
+            // Get last scan date
+            $scan_table = $wpdb->prefix . 'sentinelwp_scans';
+            $last_scan = $wpdb->get_var("SELECT scan_time FROM {$scan_table} ORDER BY id DESC LIMIT 1");
+            $data['security_stats']['last_scan_date'] = $last_scan;
+            
+            SentinelWP_Logger::debug('Security stats collected', $data['security_stats']);
+            
+        } catch (Exception $e) {
+            SentinelWP_Logger::error('Error collecting security stats', array(
+                'error' => $e->getMessage()
+            ));
+        }
+        
+        // Get system status
+        $data['system_status'] = array(
+            'php_version' => PHP_VERSION,
+            'clamav_installed' => false,
+            'php_exec_enabled' => false,
+            'memory_limit' => ini_get('memory_limit'),
+            'max_execution_time' => ini_get('max_execution_time')
+        );
+        
+        // Check if exec functions are available
+        if (function_exists('exec') && !in_array('exec', explode(',', ini_get('disable_functions')))) {
+            $data['system_status']['php_exec_enabled'] = true;
+            
+            // Check for ClamAV
+            try {
+                $output = array();
+                $return_var = 0;
+                @exec('clamscan --version 2>&1', $output, $return_var);
+                if ($return_var === 0 && !empty($output)) {
+                    $data['system_status']['clamav_installed'] = true;
+                }
+            } catch (Exception $e) {
+                // ClamAV not available
+            }
+        }
+        
+        SentinelWP_Logger::debug('System status collected', array(
+            'php_version' => $data['system_status']['php_version'],
+            'exec_enabled' => $data['system_status']['php_exec_enabled'],
+            'clamav_available' => $data['system_status']['clamav_installed']
+        ));
+        
+        // Get recent scan results if available
+        try {
+            $logs_table = $wpdb->prefix . 'sentinelwp_logs';
+            $recent_logs = $wpdb->get_results("
+                SELECT action, details 
+                FROM {$logs_table} 
+                WHERE action IN ('malware_detected', 'vulnerability_found', 'suspicious_activity')
+                ORDER BY log_time DESC 
+                LIMIT 10
+            ", ARRAY_A);
+            
+            $data['recent_security_events'] = $recent_logs;
+            
+        } catch (Exception $e) {
+            SentinelWP_Logger::debug('No recent security events available', array(
+                'error' => $e->getMessage()
+            ));
+            $data['recent_security_events'] = array();
+        }
+        
+        SentinelWP_Logger::debug('System data gathering completed', array(
+            'total_data_keys' => count($data),
+            'wordpress_version' => $data['wordpress_info']['version'],
+            'total_plugins' => count($data['wordpress_info']['active_plugins']),
+            'total_issues' => $data['security_stats']['total_issues']
+        ));
+        
+        return $data;
+    }
+    
+    /**
      * Build prompt for AI recommendations
      */
     private function build_recommendations_prompt($data) {
@@ -783,7 +915,21 @@ class SentinelWP_AI_Advisor {
             'response_preview' => substr($response, 0, 300)
         ));
         
-        // Extract JSON from the response
+        // Extract JSON from the response - handle markdown code blocks
+        $response = trim($response);
+        
+        // Remove markdown code block markers if present
+        if (strpos($response, '```json') !== false) {
+            $response = preg_replace('/^```json\s*/m', '', $response);
+            $response = preg_replace('/\s*```\s*$/m', '', $response);
+            $response = trim($response);
+            
+            SentinelWP_Logger::debug('Removed markdown code block markers', array(
+                'cleaned_response_preview' => substr($response, 0, 200)
+            ));
+        }
+        
+        // Find the JSON array boundaries
         $json_start = strpos($response, '[');
         $json_end = strrpos($response, ']') + 1;
         
@@ -809,10 +955,17 @@ class SentinelWP_AI_Advisor {
             SentinelWP_Logger::error('Failed to parse extracted JSON', array(
                 'json_error' => json_last_error_msg(),
                 'json_error_code' => json_last_error(),
-                'json_string' => $json_string
+                'json_string_preview' => substr($json_string, 0, 500),
+                'json_string_length' => strlen($json_string)
             ));
             return array();
         }
+        
+        SentinelWP_Logger::debug('JSON parsing successful', array(
+            'parsed_type' => gettype($recommendations),
+            'is_array' => is_array($recommendations),
+            'count' => is_array($recommendations) ? count($recommendations) : 'N/A'
+        ));
         
         if (!is_array($recommendations)) {
             SentinelWP_Logger::error('Decoded JSON is not an array', array(
