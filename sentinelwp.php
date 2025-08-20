@@ -10,12 +10,24 @@
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: sentinelwp
  * Domain Path: /languages
+ * Requires PHP: 8.0
+ * Tested up to: 6.8
  * Icon URI: assets/images/icon-128x128.png
  */
 
 // Prevent direct access
 if (!defined('ABSPATH')) {
     exit;
+}
+
+// Check PHP version compatibility
+if (version_compare(PHP_VERSION, '8.0', '<')) {
+    add_action('admin_notices', function() {
+        echo '<div class="error notice">';
+        echo '<p><strong>SentinelWP:</strong> This plugin requires PHP 8.0 or higher. You are running PHP ' . PHP_VERSION . '. Please update your PHP version.</p>';
+        echo '</div>';
+    });
+    return;
 }
 
 // Define plugin constants
