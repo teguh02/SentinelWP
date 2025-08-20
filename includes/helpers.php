@@ -348,10 +348,18 @@ function sentinelwp_get_wp_install_type() {
  * Get server information
  */
 function sentinelwp_get_server_info() {
+    global $wpdb;
+    
+    // Get MySQL version using $wpdb instead of deprecated mysql functions
+    $mysql_version = 'Unknown';
+    if ($wpdb) {
+        $mysql_version = $wpdb->get_var("SELECT VERSION()");
+    }
+    
     return array(
         'php_version' => PHP_VERSION,
         'server_software' => isset($_SERVER['SERVER_SOFTWARE']) ? $_SERVER['SERVER_SOFTWARE'] : 'Unknown',
-        'mysql_version' => function_exists('mysql_get_server_info') ? mysql_get_server_info() : 'Unknown',
+        'mysql_version' => $mysql_version,
         'memory_limit' => ini_get('memory_limit'),
         'max_execution_time' => ini_get('max_execution_time'),
         'upload_max_filesize' => ini_get('upload_max_filesize'),

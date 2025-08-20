@@ -12,7 +12,6 @@
  * Domain Path: /languages
  * Requires PHP: 8.0
  * Tested up to: 6.8
- * Icon URI: assets/images/icon-128x128.png
  */
 
 // Prevent direct access
@@ -24,14 +23,14 @@ if (!defined('ABSPATH')) {
 if (version_compare(PHP_VERSION, '8.0', '<')) {
     add_action('admin_notices', function() {
         echo '<div class="error notice">';
-        echo '<p><strong>SentinelWP:</strong> This plugin requires PHP 8.0 or higher. You are running PHP ' . PHP_VERSION . '. Please update your PHP version.</p>';
+        echo '<p><strong>SentinelWP:</strong> This plugin requires PHP 8.0 or higher. You are running PHP ' . esc_html(PHP_VERSION) . '. Please update your PHP version.</p>';
         echo '</div>';
     });
     return;
 }
 
 // Define plugin constants
-define('SENTINELWP_VERSION', '1.0.0');
+define('SENTINELWP_VERSION', '1.0.1');
 define('SENTINELWP_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('SENTINELWP_PLUGIN_PATH', plugin_dir_path(__FILE__));
 define('SENTINELWP_PLUGIN_FILE', __FILE__);
@@ -112,7 +111,8 @@ class SentinelWP {
      * Initialize plugin
      */
     public function init() {
-        load_plugin_textdomain('sentinelwp', false, dirname(plugin_basename(__FILE__)) . '/languages');
+        // WordPress automatically loads translations for plugins hosted on WordPress.org since version 4.6
+        // Manual load_plugin_textdomain() call is no longer needed
     }
     
     /**

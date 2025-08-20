@@ -1,0 +1,3 @@
+[2025-08-20 06:27:56] INFO: Starting database migration | User: 1 | IP: 127.0.0.1
+[2025-08-20 06:27:56] INFO: Context column already exists in issues table | User: 1 | IP: 127.0.0.1
+[2025-08-20 06:27:56] INFO: Database migration completed successfully | User: 1 | IP: 127.0.0.1
