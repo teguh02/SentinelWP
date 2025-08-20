@@ -1,0 +1,540 @@
+/**
+ * SentinelWP Admin Styles - Minimalist Professional Design
+ */
+
+/* ========================================
+   GLOBAL RESET & BASE STYLES
+======================================== */
+
+.wrap[class*="sentinelwp"] {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background: #f8f9fa !important;
+    color: #2c3e50 !important;
+    line-height: 1.6;
+    margin: 0;
+    padding: 20px 20px 40px 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* ========================================
+   TYPOGRAPHY
+======================================== */
+
+.wrap[class*="sentinelwp"] h1 {
+    color: #1f2937 !important;
+    font-size: 32px !important;
+    font-weight: 700 !important;
+    margin: 0 0 8px 0 !important;
+    line-height: 1.2 !important;
+    letter-spacing: -0.025em !important;
+}
+
+.wrap[class*="sentinelwp"] h2 {
+    color: #374151 !important;
+    font-size: 24px !important;
+    font-weight: 600 !important;
+    margin: 32px 0 16px 0 !important;
+    line-height: 1.3 !important;
+}
+
+.wrap[class*="sentinelwp"] h3 {
+    color: #4b5563 !important;
+    font-size: 18px !important;
+    font-weight: 600 !important;
+    margin: 24px 0 12px 0 !important;
+    line-height: 1.4 !important;
+}
+
+.wrap[class*="sentinelwp"] p {
+    color: #6b7280 !important;
+    font-size: 14px !important;
+    line-height: 1.6 !important;
+    margin: 0 0 16px 0 !important;
+}
+
+.wrap[class*="sentinelwp"] h1 + p {
+    color: #9ca3af !important;
+    font-size: 16px !important;
+    margin-bottom: 32px !important;
+    font-weight: 400 !important;
+}
+
+/* ========================================
+   CARD SYSTEM
+======================================== */
+
+.sentinelwp-status-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 24px;
+    margin: 32px 0;
+}
+
+.sentinelwp-card {
+    background: #ffffff;
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.sentinelwp-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.sentinelwp-card-header {
+    padding: 24px 24px 16px 24px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #ffffff;
+    border: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.sentinelwp-card-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #00d4aa, #00d4ff);
+}
+
+.sentinelwp-card-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #ffffff;
+    letter-spacing: -0.025em;
+}
+
+.sentinelwp-card-body {
+    padding: 24px;
+    background: #ffffff;
+}
+
+/* ========================================
+   STATUS ITEMS
+======================================== */
+
+.status-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 0;
+    border-bottom: 1px solid #f1f3f4;
+    transition: all 0.2s ease;
+}
+
+.status-item:last-child {
+    border-bottom: none;
+}
+
+.status-item:hover {
+    background: #f8f9ff;
+    margin: 0 -24px;
+    padding-left: 24px;
+    padding-right: 24px;
+    border-radius: 8px;
+}
+
+.status-item .label {
+    font-weight: 500;
+    color: #495057;
+    font-size: 14px;
+}
+
+.status-item .value {
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.value.enabled {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #ffffff;
+}
+
+.value.disabled {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: #ffffff;
+}
+
+.value.detected {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #ffffff;
+}
+
+.value.not-detected {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #ffffff;
+}
+
+.value.clamav {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: #ffffff;
+}
+
+.value.heuristic {
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    color: #ffffff;
+}
+
+/* ========================================
+   STATISTICS
+======================================== */
+
+.security-stat {
+    text-align: center;
+    padding: 20px 15px;
+    background: #ffffff;
+    border-radius: 12px;
+    margin: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    transition: transform 0.2s ease;
+}
+
+.security-stat:hover {
+    transform: translateY(-2px);
+}
+
+.stat-number {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.stat-number.critical {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.stat-number.warning {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.stat-number.info {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.stat-label {
+    font-size: 13px;
+    color: #6b7280;
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+/* ========================================
+   BUTTONS
+======================================== */
+
+.wrap[class*="sentinelwp"] .button,
+.wrap[class*="sentinelwp"] .button-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    color: #ffffff !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 12px 24px !important;
+    font-weight: 600 !important;
+    font-size: 14px !important;
+    text-transform: none !important;
+    letter-spacing: 0.025em !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3) !important;
+    text-decoration: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-height: auto !important;
+    line-height: 1.2 !important;
+    height: auto !important;
+}
+
+.wrap[class*="sentinelwp"] .button:hover,
+.wrap[class*="sentinelwp"] .button-primary:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4) !important;
+    background: linear-gradient(135deg, #5a67d8 0%, #667eea 100%) !important;
+}
+
+.wrap[class*="sentinelwp"] .button:active {
+    transform: translateY(0) !important;
+}
+
+.wrap[class*="sentinelwp"] .button-secondary {
+    background: #ffffff !important;
+    color: #667eea !important;
+    border: 2px solid #667eea !important;
+    border-radius: 8px !important;
+    padding: 10px 22px !important;
+    font-weight: 600 !important;
+    transition: all 0.3s ease !important;
+}
+
+.wrap[class*="sentinelwp"] .button-secondary:hover {
+    background: #667eea !important;
+    color: #ffffff !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3) !important;
+}
+
+/* ========================================
+   PROGRESS BAR
+======================================== */
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: #e5e7eb;
+    border-radius: 12px;
+    overflow: hidden;
+    margin: 20px 0;
+    position: relative;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #10b981, #059669);
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+}
+
+.progress-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.2),
+        transparent
+    );
+    animation: progress-shine 2s infinite;
+}
+
+@keyframes progress-shine {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+.progress-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    color: #6b7280;
+    font-weight: 500;
+    margin-top: 8px;
+}
+
+/* ========================================
+   NOTIFICATIONS
+======================================== */
+
+.sentinelwp-notice {
+    padding: 16px 20px;
+    margin: 16px 0;
+    border: none;
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    border-left: 4px solid #667eea;
+    color: #374151;
+    font-weight: 500;
+}
+
+.sentinelwp-notice.notice-success {
+    border-left-color: #10b981;
+    background: linear-gradient(135deg, #ecfdf5, #f0fdf4);
+}
+
+.sentinelwp-notice.notice-warning {
+    border-left-color: #f59e0b;
+    background: linear-gradient(135deg, #fffbeb, #fef3c7);
+}
+
+.sentinelwp-notice.notice-error {
+    border-left-color: #ef4444;
+    background: linear-gradient(135deg, #fef2f2, #fee2e2);
+}
+
+/* ========================================
+   ISSUE ITEMS
+======================================== */
+
+.issue-item {
+    background: #ffffff;
+    border: none;
+    border-radius: 12px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.issue-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.issue-header {
+    padding: 20px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #ffffff;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.severity-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.severity-badge.high {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: #ffffff;
+}
+
+.severity-badge.medium {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #ffffff;
+}
+
+.severity-badge.low {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #ffffff;
+}
+
+/* ========================================
+   UTILITIES
+======================================== */
+
+.sentinelwp-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #e5e7eb;
+    border-radius: 50%;
+    border-top-color: #667eea;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.button.loading {
+    position: relative;
+    color: transparent !important;
+    cursor: wait;
+}
+
+.button.loading::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 16px;
+    height: 16px;
+    margin: -8px 0 0 -8px;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 0.8s linear infinite;
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+======================================== */
+
+@media (max-width: 768px) {
+    .wrap[class*="sentinelwp"] {
+        padding: 16px;
+    }
+    
+    .sentinelwp-status-cards {
+        grid-template-columns: 1fr;
+        gap: 16px;
+        margin: 24px 0;
+    }
+    
+    .sentinelwp-card-header,
+    .sentinelwp-card-body {
+        padding: 20px;
+    }
+    
+    .wrap[class*="sentinelwp"] h1 {
+        font-size: 28px !important;
+    }
+}
+
+/* ========================================
+   WORDPRESS ADMIN COMPATIBILITY
+======================================== */
+
+/* Explicitly preserve WordPress admin sidebar and top bar */
+#adminmenuback,
+#adminmenuwrap,
+#adminmenu,
+#adminmenu li,
+#adminmenu a,
+#adminmenu div,
+#wpadminbar,
+#wpadminbar *,
+.wp-admin #wpcontent,
+.wp-admin #wpfooter {
+    color-scheme: unset !important;
+}
+
+/* Ensure WordPress admin stays unaffected */
+@media (prefers-color-scheme: dark) {
+    #adminmenuback,
+    #adminmenuwrap,
+    #adminmenu,
+    #adminmenu li,
+    #adminmenu a,
+    #wpadminbar,
+    #wpadminbar * {
+        color-scheme: unset !important;
+        background: unset !important;
+        color: unset !important;
+    }
+}

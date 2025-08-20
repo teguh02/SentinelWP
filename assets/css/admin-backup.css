@@ -1,0 +1,1172 @@
+/**
+ * SentinelWP Admin Styles - Minimalist Professional Design
+ */
+
+/* Global Reset and Base Styles */
+.wrap[class*="sentinelwp"] {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background: #f8f9fa !important;
+    color: #2c3e50 !important;
+    line-height: 1.6;
+    margin: 0;
+    padding: 20px 20px 40px 20px;
+}
+
+/* Main Dashboard Container */
+.sentinelwp-dashboard {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Modern Card Grid */
+.sentinelwp-status-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 24px;
+    margin: 32px 0;
+}
+
+/* Modern Minimalist Cards */
+.sentinelwp-card {
+    background: #ffffff;
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.sentinelwp-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+/* Clean Card Headers */
+.sentinelwp-card-header {
+    padding: 24px 24px 16px 24px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #ffffff;
+    border: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.sentinelwp-card-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #00d4aa, #00d4ff);
+}
+
+.sentinelwp-card-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #ffffff;
+    letter-spacing: -0.025em;
+}
+
+/* Spacious Card Body */
+.sentinelwp-card-body {
+    padding: 24px;
+    background: #ffffff;
+}
+
+/* Clean Status Items */
+.status-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 0;
+    border-bottom: 1px solid #f1f3f4;
+    transition: all 0.2s ease;
+}
+
+.status-item:last-child {
+    border-bottom: none;
+}
+
+.status-item:hover {
+    background: #f8f9ff;
+    margin: 0 -24px;
+    padding-left: 24px;
+    padding-right: 24px;
+    border-radius: 8px;
+}
+
+.status-item .label {
+    font-weight: 500;
+    color: #495057;
+    font-size: 14px;
+}
+
+.status-item .value {
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Modern Status Values */
+.value.enabled {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #ffffff;
+}
+
+.value.disabled {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: #ffffff;
+}
+
+.value.detected {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #ffffff;
+}
+
+.value.not-detected {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #ffffff;
+}
+
+.value.clamav {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: #ffffff;
+}
+
+.value.heuristic {
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    color: #ffffff;
+}
+
+/* Modern Security Statistics */
+.security-stat {
+    text-align: center;
+    padding: 20px 15px;
+    background: #ffffff;
+    border-radius: 12px;
+    margin: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    transition: transform 0.2s ease;
+}
+
+.security-stat:hover {
+    transform: translateY(-2px);
+}
+
+.stat-number {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.stat-number.critical {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.stat-number.warning {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.stat-number.info {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.stat-label {
+    font-size: 13px;
+    color: #6b7280;
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.last-scan-info {
+    text-align: center;
+}
+
+.scan-status {
+    display: inline-block;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 12px;
+    margin-bottom: 10px;
+}
+
+.scan-status.status-safe {
+    background: #d4edda;
+    color: #155724;
+}
+
+.scan-status.status-warning {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.scan-status.status-critical {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.scan-details p {
+    margin: 5px 0;
+    color: #50575e;
+}
+
+.issues-chart {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.issue-type-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f0f1;
+}
+
+.issue-type-item:last-child {
+    border-bottom: none;
+}
+
+.issue-type {
+    font-weight: 500;
+}
+
+.issue-count {
+    background: #0073aa;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+/* Modern Progress Bar */
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: #e5e7eb;
+    border-radius: 12px;
+    overflow: hidden;
+    margin: 20px 0;
+    position: relative;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #10b981, #059669);
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+}
+
+.progress-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.2),
+        transparent
+    );
+    animation: progress-shine 2s infinite;
+}
+
+@keyframes progress-shine {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+.progress-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    color: #6b7280;
+    font-weight: 500;
+    margin-top: 8px;
+}
+
+/* Issues and Notifications - Modern Clean Style */
+.issue-item {
+    background: #ffffff;
+    border: none;
+    border-radius: 12px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.issue-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.issue-header {
+    padding: 20px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #ffffff;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.severity-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.severity-badge.high {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: #ffffff;
+}
+
+.severity-badge.medium {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #ffffff;
+}
+
+.severity-badge.low {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #ffffff;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .wrap[class*="sentinelwp"] {
+        padding: 16px;
+    }
+    
+    .sentinelwp-status-cards {
+        grid-template-columns: 1fr;
+        gap: 16px;
+        margin: 24px 0;
+    }
+    
+    .sentinelwp-card-header,
+    .sentinelwp-card-body {
+        padding: 20px;
+    }
+    
+    .wrap[class*="sentinelwp"] h1 {
+        font-size: 28px !important;
+    }
+}
+
+/* Loading spinner */
+.sentinelwp-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(0, 115, 170, 0.3);
+    border-radius: 50%;
+    border-top-color: #0073aa;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Notifications */
+.sentinelwp-notice {
+    padding: 12px;
+    margin: 5px 0 15px 0;
+    border-left: 4px solid #00a0d2;
+    background: #fff;
+    box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.1);
+}
+
+.sentinelwp-notice.notice-success {
+    border-left-color: #46b450;
+}
+
+.sentinelwp-notice.notice-warning {
+    border-left-color: #ffb900;
+}
+
+.sentinelwp-notice.notice-error {
+    border-left-color: #dc3232;
+}
+
+/* Notifications Header */
+.notifications-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0 10px 0;
+    border-bottom: 1px solid #e5e5e5;
+    margin-bottom: 20px;
+}
+
+.notifications-header h3 {
+    margin: 0;
+    font-size: 18px;
+    color: #1d2327;
+}
+
+.notifications-ordering {
+    font-size: 12px;
+    color: #646970;
+    font-style: italic;
+    background: #f0f0f1;
+    padding: 4px 8px;
+    border-radius: 3px;
+    position: relative;
+}
+
+.notifications-ordering::before {
+    content: "📅";
+    margin-right: 4px;
+}
+
+/* Notification Items */
+
+/* Security Score */
+.security-score {
+    text-align: center;
+    padding: 20px;
+}
+
+.score-circle {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: bold;
+    color: white;
+    margin-bottom: 10px;
+}
+
+.score-circle.grade-a {
+    background: linear-gradient(135deg, #28a745, #20c997);
+}
+
+.score-circle.grade-b {
+    background: linear-gradient(135deg, #28a745, #ffc107);
+}
+
+.score-circle.grade-c {
+    background: linear-gradient(135deg, #ffc107, #fd7e14);
+}
+
+.score-circle.grade-d {
+    background: linear-gradient(135deg, #fd7e14, #dc3545);
+}
+
+.score-circle.grade-f {
+    background: linear-gradient(135deg, #dc3545, #6f42c1);
+}
+
+/* Button states */
+.button.loading {
+    position: relative;
+    color: transparent;
+}
+
+.button.loading::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 16px;
+    height: 16px;
+    margin: -8px 0 0 -8px;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 0.8s linear infinite;
+}
+
+/* Force light theme - removed dark theme support to prevent conflicts */
+
+/* AI Recommendations Styles */
+.ai-recommendations-list {
+    margin: 0;
+}
+
+.ai-recommendation-item {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    margin: 15px 0;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.ai-recommendation-item:hover {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.ai-recommendation-item.implemented {
+    opacity: 0.7;
+    border-color: #00a32a;
+}
+
+.ai-recommendation-item.dismissed {
+    opacity: 0.5;
+    border-color: #ddd;
+}
+
+.ai-recommendation-item .recommendation-header {
+    padding: 15px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    position: relative;
+}
+
+.ai-recommendation-item .priority-badge {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-right: 10px;
+}
+
+.ai-recommendation-item .category-badge {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    margin-right: 10px;
+}
+
+.ai-recommendation-item .confidence-score {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.ai-recommendation-item h4 {
+    margin: 8px 0 0 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+}
+
+.ai-recommendation-item .recommendation-description {
+    padding: 15px;
+    background: #fff;
+}
+
+.ai-recommendation-item .recommendation-description p {
+    margin: 0;
+    line-height: 1.6;
+    color: #50575e;
+}
+
+.ai-recommendation-item .recommendation-meta {
+    padding: 12px 15px;
+    background: #f6f7f7;
+    border-top: 1px solid #c3c4c7;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.ai-recommendation-item .recommendation-meta small {
+    color: #646970;
+    font-size: 12px;
+}
+
+.ai-recommendation-item .recommendation-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.ai-recommendation-item .button-small {
+    padding: 4px 8px;
+    font-size: 12px;
+    height: auto;
+    line-height: 1.4;
+}
+
+.ai-recommendation-item .mark-implemented {
+    background: #00a32a;
+    border-color: #00a32a;
+    color: #fff;
+}
+
+.ai-recommendation-item .mark-implemented:hover {
+    background: #008a20;
+    border-color: #008a20;
+}
+
+.ai-recommendation-item .dismiss-recommendation {
+    background: #dcdcde;
+    border-color: #c3c4c7;
+    color: #50575e;
+}
+
+.ai-recommendation-item .dismiss-recommendation:hover {
+    background: #c3c4c7;
+    border-color: #a7aaad;
+}
+
+/* Priority-specific styles for AI recommendations */
+.ai-recommendation-item.priority-critical .recommendation-header {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+}
+
+.ai-recommendation-item.priority-high .recommendation-header {
+    background: linear-gradient(135deg, #fd7e14 0%, #e55100 100%);
+}
+
+.ai-recommendation-item.priority-medium .recommendation-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.ai-recommendation-item.priority-low .recommendation-header {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+}
+
+/* Generate AI Recommendations Button */
+#generate-ai-recommendations-btn {
+    position: relative;
+    overflow: hidden;
+}
+
+#generate-ai-recommendations-btn .dashicons {
+    margin-right: 5px;
+    animation: none;
+}
+
+#generate-ai-recommendations-btn.loading .dashicons {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+#ai-recommendations-status {
+    margin-top: 15px;
+}
+
+#ai-recommendations-status .notice {
+    margin: 0;
+    padding: 10px;
+}
+
+/* System vs AI Recommendations distinction */
+.recommendation-category h4 {
+    color: #1d2327;
+    border-bottom: 2px solid #0073aa;
+    padding-bottom: 5px;
+    margin-bottom: 15px;
+}
+
+.recommendation-item {
+    margin-bottom: 15px;
+}
+
+/* Responsive design for AI recommendations */
+@media (max-width: 768px) {
+    .ai-recommendation-item .recommendation-meta {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .ai-recommendation-item .recommendation-actions {
+        flex-wrap: wrap;
+    }
+    
+    .ai-recommendation-item .confidence-score {
+        position: static;
+        margin-top: 10px;
+        display: inline-block;
+    }
+}
+
+/* Force light theme for AI recommendations */
+
+/* Notification timestamp styling */
+.notification-details .timestamp {
+    font-weight: 600;
+    color: #0073aa;
+    background: #f0f6fc;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 11px;
+    cursor: help;
+    border: 1px solid #c5d9ed;
+}
+
+.notification-details .timestamp:hover {
+    background: #e5f3ff;
+    border-color: #0073aa;
+}
+
+/* Sort indicator for timestamp */
+.timestamp::before {
+    content: "🕐";
+    margin-right: 3px;
+    font-size: 10px;
+}
+
+/* Scan Progress Card */
+#scan-progress {
+    margin-top: 20px;
+    border: 2px solid #0073aa;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+#scan-progress .sentinelwp-card-header {
+    background: linear-gradient(90deg, #0073aa, #00a0d2);
+    color: white;
+}
+
+#scan-progress .sentinelwp-card-header h3 {
+    color: white;
+    margin: 0;
+}
+
+#scan-progress.active {
+    animation: scan-highlight 2s infinite alternate;
+}
+
+@keyframes scan-highlight {
+    0% { border-color: #0073aa; }
+    100% { border-color: #00a0d2; }
+}
+
+/* IDS/IPS Styles */
+.ids-ips-status .status-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.ids-ips-status .status-item:last-child {
+    border-bottom: none;
+}
+
+.status-value.enabled {
+    color: #46b450;
+    font-weight: bold;
+}
+
+.status-value.disabled {
+    color: #dc3232;
+    font-weight: bold;
+}
+
+.attack-type {
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: white;
+}
+
+.attack-type-brute_force_login {
+    background-color: #dc3232;
+}
+
+.attack-type-sql_injection {
+    background-color: #ff6900;
+}
+
+.attack-type-xss_attempt {
+    background-color: #ffb900;
+}
+
+.attack-type-xmlrpc_flood {
+    background-color: #826eb4;
+}
+
+.attack-type-ip_blocked {
+    background-color: #555;
+}
+
+.blocked-ips-table table,
+.intrusion-logs-table table {
+    margin-top: 10px;
+}
+
+.ids-ips-stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 15px;
+}
+
+.ids-ips-stats .stat-item {
+    text-align: center;
+    padding: 15px;
+    background: white;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+/* Responsive design for IDS/IPS stats */
+@media (max-width: 768px) {
+    .ids-ips-stats-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Comprehensive light theme enforcement for all plugin pages */
+.sentinelwp-dashboard,
+.sentinelwp-dashboard *,
+.sentinelwp-settings *,
+.sentinelwp-recommendations *,
+.sentinelwp-ai-advisor *,
+.sentinelwp-ids-ips *,
+/* Force light theme only for SentinelWP plugin elements */
+.wrap.sentinelwp-dashboard,
+.wrap.sentinelwp-dashboard *,
+.wrap.sentinelwp-settings,
+.wrap.sentinelwp-settings *,
+.wrap.sentinelwp-recommendations,
+.wrap.sentinelwp-recommendations *,
+.wrap.sentinelwp-ai-advisor,
+.wrap.sentinelwp-ai-advisor *,
+.wrap.sentinelwp-ids-ips,
+.wrap.sentinelwp-ids-ips *,
+.wrap.sentinelwp-notifications,
+.wrap.sentinelwp-notifications *,
+.wrap.sentinelwp-logs,
+.wrap.sentinelwp-logs *,
+.wrap.sentinelwp-scan-results,
+.wrap.sentinelwp-scan-results *,
+.sentinelwp-card,
+.sentinelwp-card * {
+    color-scheme: light !important;
+}
+
+/* Explicitly preserve WordPress admin sidebar and top bar */
+#adminmenuback,
+#adminmenuwrap,
+#adminmenu,
+#adminmenu li,
+#adminmenu a,
+#adminmenu div,
+#wpadminbar,
+#wpadminbar *,
+.wp-admin #wpcontent,
+.wp-admin #wpfooter {
+    color-scheme: unset !important;
+}
+
+/* Override WordPress admin dark theme elements - only for SentinelWP pages */
+.wp-admin .wrap.sentinelwp-dashboard,
+.wp-admin .wrap.sentinelwp-settings,
+.wp-admin .wrap.sentinelwp-recommendations,
+.wp-admin .wrap.sentinelwp-ai-advisor,
+.wp-admin .wrap.sentinelwp-ids-ips,
+.wp-admin .wrap.sentinelwp-notifications,
+.wp-admin .wrap.sentinelwp-logs,
+.wp-admin .wrap.sentinelwp-scan-results {
+    background: #f1f1f1 !important;
+    min-height: calc(100vh - 160px) !important;
+}
+
+/* Force white background for all cards and content areas - only within SentinelWP pages */
+.wrap[class*="sentinelwp"] .sentinelwp-card,
+.wrap[class*="sentinelwp"] .ai-recommendation-item,
+.wrap[class*="sentinelwp"] .recommendation-item,
+.wrap[class*="sentinelwp"] .ai-analysis,
+.wrap[class*="sentinelwp"] .tab-content,
+.wrap[class*="sentinelwp"] .issue-item,
+.wrap[class*="sentinelwp"] .issue-details,
+.wrap[class*="sentinelwp"] .postbox,
+.wrap[class*="sentinelwp"] .stuffbox {
+    background: #fff !important;
+    border: 1px solid #c3c4c7 !important;
+}
+
+/* Modern Page Headers */
+.wrap[class*="sentinelwp"] h1 {
+    color: #1f2937 !important;
+    font-size: 32px !important;
+    font-weight: 700 !important;
+    margin: 0 0 8px 0 !important;
+    line-height: 1.2 !important;
+    letter-spacing: -0.025em !important;
+}
+
+.wrap[class*="sentinelwp"] h2 {
+    color: #374151 !important;
+    font-size: 24px !important;
+    font-weight: 600 !important;
+    margin: 32px 0 16px 0 !important;
+    line-height: 1.3 !important;
+}
+
+.wrap[class*="sentinelwp"] h3 {
+    color: #4b5563 !important;
+    font-size: 18px !important;
+    font-weight: 600 !important;
+    margin: 24px 0 12px 0 !important;
+    line-height: 1.4 !important;
+}
+
+.wrap[class*="sentinelwp"] p {
+    color: #6b7280 !important;
+    font-size: 14px !important;
+    line-height: 1.6 !important;
+    margin: 0 0 16px 0 !important;
+}
+
+/* Page Description */
+.wrap[class*="sentinelwp"] h1 + p {
+    color: #9ca3af !important;
+    font-size: 16px !important;
+    margin-bottom: 32px !important;
+    font-weight: 400 !important;
+}
+
+/* Text content - only within SentinelWP pages */
+.wrap[class*="sentinelwp"] p, 
+.wrap[class*="sentinelwp"] span, 
+.wrap[class*="sentinelwp"] div, 
+.wrap[class*="sentinelwp"] label, 
+.wrap[class*="sentinelwp"] strong, 
+.wrap[class*="sentinelwp"] em,
+.wrap[class*="sentinelwp"] .status-item .label,
+.wrap[class*="sentinelwp"] .recommendation-description,
+.wrap[class*="sentinelwp"] .analysis-content,
+.wrap[class*="sentinelwp"] .notification-details {
+    color: #1d2327 !important;
+}
+
+/* Links - only within SentinelWP pages */
+.wrap[class*="sentinelwp"] a {
+    color: #0073aa !important;
+}
+
+.wrap[class*="sentinelwp"] a:hover {
+    color: #005177 !important;
+}
+
+/* Modern Buttons */
+.wrap[class*="sentinelwp"] .button,
+.wrap[class*="sentinelwp"] .button-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 24px;
+    font-weight: 600;
+    font-size: 14px;
+    text-transform: none;
+    letter-spacing: 0.025em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: auto;
+    line-height: 1.2;
+}
+
+.wrap[class*="sentinelwp"] .button:hover,
+.wrap[class*="sentinelwp"] .button-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
+    background: linear-gradient(135deg, #5a67d8 0%, #667eea 100%);
+}
+
+.wrap[class*="sentinelwp"] .button:active {
+    transform: translateY(0);
+}
+
+.wrap[class*="sentinelwp"] .button-secondary {
+    background: #ffffff;
+    color: #667eea;
+    border: 2px solid #667eea;
+    border-radius: 8px;
+    padding: 10px 22px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.wrap[class*="sentinelwp"] .button-secondary:hover {
+    background: #667eea;
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+}
+
+/* Specific overrides for WordPress admin dark mode interference - only within SentinelWP pages */
+.wrap[class*="sentinelwp"] {
+    background: #f1f1f1 !important;
+}
+
+/* Ensure all SentinelWP plugin containers use light background */
+.wrap[class*="sentinelwp"] {
+    background: #f1f1f1 !important;
+    color: #1d2327 !important;
+}
+
+/* Override any dark theme CSS variables that might interfere - only for SentinelWP */
+.wrap[class*="sentinelwp"] {
+    --wp-admin-theme-color: #0073aa !important;
+    --wp-admin-theme-color-darker-10: #005177 !important;
+    --wp-admin-theme-color-darker-20: #003c56 !important;
+}
+
+/* IDS/IPS Page specific fixes */
+.ids-ips-status-cards .sentinelwp-card,
+.blocked-ips-section .sentinelwp-card,
+.intrusion-logs-section .sentinelwp-card {
+    background: #fff !important;
+    border: 1px solid #c3c4c7 !important;
+}
+
+.attack-type,
+.status-value {
+    color: inherit !important;
+}
+
+/* AI Advisor page specific fixes */
+.ai-recommendations-section,
+.generate-recommendations-section {
+    background: #f1f1f1 !important;
+}
+
+/* Recommendations page specific fixes */
+.recommendations-list,
+.system-recommendations,
+.ai-recommendations {
+    background: #f1f1f1 !important;
+}
+
+/* Meta boxes and admin panels - only within SentinelWP pages */
+.wrap[class*="sentinelwp"] .meta-box-sortables,
+.wrap[class*="sentinelwp"] .metabox-holder {
+    background: #f1f1f1 !important;
+}
+
+/* Final comprehensive override to prevent any dark mode interference - only for SentinelWP pages */
+.wrap[class*="sentinelwp"] * {
+    color: inherit !important;
+}
+
+/* Ensure text remains readable in all contexts - only for SentinelWP pages */
+.wrap.sentinelwp-dashboard p,
+.wrap.sentinelwp-dashboard span,
+.wrap.sentinelwp-dashboard div:not(.dashicons):not([class*="icon"]),
+.wrap.sentinelwp-settings p,
+.wrap.sentinelwp-settings span,
+.wrap.sentinelwp-settings div:not(.dashicons):not([class*="icon"]),
+.wrap.sentinelwp-recommendations p,
+.wrap.sentinelwp-recommendations span,
+.wrap.sentinelwp-recommendations div:not(.dashicons):not([class*="icon"]),
+.wrap.sentinelwp-ai-advisor p,
+.wrap.sentinelwp-ai-advisor span,
+.wrap.sentinelwp-ai-advisor div:not(.dashicons):not([class*="icon"]),
+.wrap.sentinelwp-ids-ips p,
+.wrap.sentinelwp-ids-ips span,
+.wrap.sentinelwp-ids-ips div:not(.dashicons):not([class*="icon"]),
+.wrap.sentinelwp-notifications p,
+.wrap.sentinelwp-notifications span,
+.wrap.sentinelwp-notifications div:not(.dashicons):not([class*="icon"]),
+.wrap.sentinelwp-logs p,
+.wrap.sentinelwp-logs span,
+.wrap.sentinelwp-logs div:not(.dashicons):not([class*="icon"]),
+.wrap.sentinelwp-scan-results p,
+.wrap.sentinelwp-scan-results span,
+.wrap.sentinelwp-scan-results div:not(.dashicons):not([class*="icon"]) {
+    color: #1d2327 !important;
+}
+
+/* Override browser/OS level dark mode CSS - only for SentinelWP pages */
+@media (prefers-color-scheme: dark) {
+    .wrap.sentinelwp-dashboard,
+    .wrap.sentinelwp-dashboard *,
+    .wrap.sentinelwp-settings,
+    .wrap.sentinelwp-settings *,
+    .wrap.sentinelwp-recommendations,
+    .wrap.sentinelwp-recommendations *,
+    .wrap.sentinelwp-ai-advisor,
+    .wrap.sentinelwp-ai-advisor *,
+    .wrap.sentinelwp-ids-ips,
+    .wrap.sentinelwp-ids-ips *,
+    .wrap.sentinelwp-notifications,
+    .wrap.sentinelwp-notifications *,
+    .wrap.sentinelwp-logs,
+    .wrap.sentinelwp-logs *,
+    .wrap.sentinelwp-scan-results,
+    .wrap.sentinelwp-scan-results * {
+        color-scheme: light !important;
+        background: unset !important;
+        color: unset !important;
+    }
+    
+    /* Ensure WordPress admin sidebar stays untouched */
+    #adminmenuback,
+    #adminmenuwrap,
+    #adminmenu,
+    #adminmenu li,
+    #adminmenu a,
+    #wpadminbar,
+    #wpadminbar * {
+        color-scheme: unset !important;
+        background: unset !important;
+        color: unset !important;
+    }
+}
