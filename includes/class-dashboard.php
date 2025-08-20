@@ -698,6 +698,9 @@ class SentinelWP_Dashboard {
                 <a href="?page=sentinelwp-settings&tab=gemini" class="nav-tab <?php echo $current_tab == 'gemini' ? 'nav-tab-active' : ''; ?>">
                     <?php _e('Gemini AI', 'sentinelwp'); ?>
                 </a>
+                <a href="?page=sentinelwp-settings&tab=ids-ips" class="nav-tab <?php echo $current_tab == 'ids-ips' ? 'nav-tab-active' : ''; ?>">
+                    <?php _e('IDS/IPS', 'sentinelwp'); ?>
+                </a>
                 <a href="?page=sentinelwp-settings&tab=database" class="nav-tab <?php echo $current_tab == 'database' ? 'nav-tab-active' : ''; ?>">
                     <?php _e('Database', 'sentinelwp'); ?>
                 </a>
@@ -826,6 +829,88 @@ class SentinelWP_Dashboard {
                         </tr>
                     </table>
                 </div>
+                
+                <?php elseif ($current_tab == 'ids-ips'): ?>
+                <div class="tab-content">
+                    <div class="notice notice-info">
+                        <p><?php _e('Configure Intrusion Detection System (IDS) and Intrusion Prevention System (IPS) settings.', 'sentinelwp'); ?></p>
+                    </div>
+                    
+                    <table class="form-table">
+                        <tr>
+                            <th scope="row"><?php _e('Enable IDS (Intrusion Detection)', 'sentinelwp'); ?></th>
+                            <td>
+                                <label>
+                                    <input type="checkbox" name="ids_enabled" value="1" <?php checked(get_option('sentinelwp_ids_enabled', true)); ?> />
+                                    <?php _e('Log intrusion attempts and suspicious activities', 'sentinelwp'); ?>
+                                </label>
+                                <p class="description"><?php _e('When enabled, all suspicious activities will be logged to files for analysis.', 'sentinelwp'); ?></p>
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <th scope="row"><?php _e('Enable IPS (Intrusion Prevention)', 'sentinelwp'); ?></th>
+                            <td>
+                                <label>
+                                    <input type="checkbox" name="ips_enabled" value="1" <?php checked(get_option('sentinelwp_ips_enabled', true)); ?> />
+                                    <?php _e('Automatically block malicious IP addresses', 'sentinelwp'); ?>
+                                </label>
+                                <p class="description"><?php _e('When enabled, IPs performing suspicious activities will be temporarily blocked.', 'sentinelwp'); ?></p>
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <th scope="row"><?php _e('IP Block Duration', 'sentinelwp'); ?></th>
+                            <td>
+                                <select name="ids_block_duration">
+                                    <option value="5" <?php selected(get_option('sentinelwp_ids_block_duration', 10), 5); ?>>
+                                        <?php _e('5 minutes', 'sentinelwp'); ?>
+                                    </option>
+                                    <option value="10" <?php selected(get_option('sentinelwp_ids_block_duration', 10), 10); ?>>
+                                        <?php _e('10 minutes', 'sentinelwp'); ?>
+                                    </option>
+                                    <option value="15" <?php selected(get_option('sentinelwp_ids_block_duration', 10), 15); ?>>
+                                        <?php _e('15 minutes', 'sentinelwp'); ?>
+                                    </option>
+                                    <option value="30" <?php selected(get_option('sentinelwp_ids_block_duration', 10), 30); ?>>
+                                        <?php _e('30 minutes', 'sentinelwp'); ?>
+                                    </option>
+                                    <option value="60" <?php selected(get_option('sentinelwp_ids_block_duration', 10), 60); ?>>
+                                        <?php _e('60 minutes', 'sentinelwp'); ?>
+                                    </option>
+                                </select>
+                                <p class="description"><?php _e('How long to block suspicious IP addresses.', 'sentinelwp'); ?></p>
+                            </td>
+                        </tr>
+                    </table>
+                    
+                    <div class="ids-ips-stats" style="margin-top: 30px; padding: 20px; background: #f9f9f9; border: 1px solid #ddd; border-radius: 4px;">
+                        <h3><?php _e('Current IDS/IPS Status', 'sentinelwp'); ?></h3>
+                        <?php
+                        $ids_ips = SentinelWP_IDS_IPS::instance();
+                        $blocked_ips_count = count($ids_ips->get_blocked_ips());
+                        $logs_exist = file_exists(SENTINELWP_PLUGIN_PATH . 'logs/sentinelwp-ids.log');
+                        $log_size = $logs_exist ? sentinelwp_format_file_size(filesize(SENTINELWP_PLUGIN_PATH . 'logs/sentinelwp-ids.log')) : '0 B';
+                        ?>
+                        <div class="ids-ips-stats-grid" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+                            <div class="stat-item">
+                                <strong><?php _e('Currently Blocked IPs:', 'sentinelwp'); ?></strong>
+                                <div style="font-size: 24px; color: #dc3232;"><?php echo esc_html($blocked_ips_count); ?></div>
+                            </div>
+                            <div class="stat-item">
+                                <strong><?php _e('IDS Log File Size:', 'sentinelwp'); ?></strong>
+                                <div style="font-size: 18px; color: #46b450;"><?php echo esc_html($log_size); ?></div>
+                            </div>
+                            <div class="stat-item">
+                                <strong><?php _e('Protection Status:', 'sentinelwp'); ?></strong>
+                                <div style="font-size: 16px; color: <?php echo (get_option('sentinelwp_ips_enabled', true)) ? '#46b450' : '#dc3232'; ?>">
+                                    <?php echo (get_option('sentinelwp_ips_enabled', true)) ? __('Active', 'sentinelwp') : __('Inactive', 'sentinelwp'); ?>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
                 <?php endif; ?>
                 
                 <?php if ($current_tab == 'database'): ?>
@@ -1294,6 +1379,12 @@ class SentinelWP_Dashboard {
                 'sentinelwp_gemini_enabled' => isset($_POST['gemini_enabled']) ? 1 : 0,
                 'sentinelwp_gemini_api_key' => sanitize_text_field($_POST['gemini_api_key'] ?? ''),
                 'sentinelwp_gemini_model' => sanitize_text_field($_POST['gemini_model'] ?? 'gemini-2.5-flash')
+            );
+        } elseif ($current_tab === 'ids-ips') {
+            $settings = array(
+                'sentinelwp_ids_enabled' => isset($_POST['ids_enabled']) ? 1 : 0,
+                'sentinelwp_ips_enabled' => isset($_POST['ips_enabled']) ? 1 : 0,
+                'sentinelwp_ids_block_duration' => intval($_POST['ids_block_duration'] ?? 10)
             );
         }
         
@@ -2536,5 +2627,241 @@ class SentinelWP_Dashboard {
         } else {
             wp_send_json_error(__('Failed to delete notification', 'sentinelwp'));
         }
+    }
+    
+    /**
+     * Render IDS/IPS page
+     */
+    public static function render_ids_ips() {
+        $ids_ips = SentinelWP_IDS_IPS::instance();
+        $intrusion_logs = $ids_ips->get_intrusion_logs(50);
+        $blocked_ips = $ids_ips->get_blocked_ips();
+        
+        // Handle form submissions
+        if (isset($_POST['action'])) {
+            check_admin_referer('sentinelwp_ids_ips', 'sentinelwp_ids_ips_nonce');
+            
+            switch ($_POST['action']) {
+                case 'unblock_ip':
+                    if (isset($_POST['ip'])) {
+                        $ip = sanitize_text_field($_POST['ip']);
+                        if ($ids_ips->unblock_ip($ip)) {
+                            echo '<div class="notice notice-success"><p>' . __('IP address unblocked successfully.', 'sentinelwp') . '</p></div>';
+                        } else {
+                            echo '<div class="notice notice-error"><p>' . __('Failed to unblock IP address.', 'sentinelwp') . '</p></div>';
+                        }
+                        $blocked_ips = $ids_ips->get_blocked_ips(); // Refresh list
+                    }
+                    break;
+                    
+                case 'clear_logs':
+                    if ($ids_ips->clear_logs()) {
+                        echo '<div class="notice notice-success"><p>' . __('Intrusion logs cleared successfully.', 'sentinelwp') . '</p></div>';
+                        $intrusion_logs = array(); // Clear the display
+                    } else {
+                        echo '<div class="notice notice-error"><p>' . __('Failed to clear intrusion logs.', 'sentinelwp') . '</p></div>';
+                    }
+                    break;
+            }
+        }
+        
+        ?>
+        <div class="wrap">
+            <h1><?php echo esc_html__('IDS/IPS Security Monitor', 'sentinelwp'); ?></h1>
+            
+            <div class="sentinelwp-dashboard">
+                <div class="sentinelwp-row">
+                    <!-- Blocked IPs Section -->
+                    <div class="sentinelwp-col-6">
+                        <div class="sentinelwp-card">
+                            <h3><?php echo esc_html__('Blocked IP Addresses', 'sentinelwp'); ?></h3>
+                            <?php if (empty($blocked_ips)): ?>
+                                <p><?php echo esc_html__('No IP addresses are currently blocked.', 'sentinelwp'); ?></p>
+                            <?php else: ?>
+                                <div class="blocked-ips-table">
+                                    <table class="wp-list-table widefat fixed striped">
+                                        <thead>
+                                            <tr>
+                                                <th><?php echo esc_html__('IP Address', 'sentinelwp'); ?></th>
+                                                <th><?php echo esc_html__('Reason', 'sentinelwp'); ?></th>
+                                                <th><?php echo esc_html__('Blocked At', 'sentinelwp'); ?></th>
+                                                <th><?php echo esc_html__('Expires At', 'sentinelwp'); ?></th>
+                                                <th><?php echo esc_html__('Actions', 'sentinelwp'); ?></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php foreach ($blocked_ips as $blocked_ip): ?>
+                                                <tr>
+                                                    <td><code><?php echo esc_html($blocked_ip['ip']); ?></code></td>
+                                                    <td><?php echo esc_html(ucfirst(str_replace('_', ' ', $blocked_ip['reason']))); ?></td>
+                                                    <td><?php echo esc_html(date('Y-m-d H:i:s', $blocked_ip['blocked_at'])); ?></td>
+                                                    <td><?php echo esc_html(date('Y-m-d H:i:s', $blocked_ip['expires_at'])); ?></td>
+                                                    <td>
+                                                        <form method="post" style="display: inline;">
+                                                            <?php wp_nonce_field('sentinelwp_ids_ips', 'sentinelwp_ids_ips_nonce'); ?>
+                                                            <input type="hidden" name="action" value="unblock_ip">
+                                                            <input type="hidden" name="ip" value="<?php echo esc_attr($blocked_ip['ip']); ?>">
+                                                            <button type="submit" class="button button-small unblock-ip-btn" 
+                                                                    data-ip="<?php echo esc_attr($blocked_ip['ip']); ?>"
+                                                                    onclick="return confirm('<?php echo esc_js__('Are you sure you want to unblock this IP?', 'sentinelwp'); ?>')">>
+                                                                <?php echo esc_html__('Unblock', 'sentinelwp'); ?>
+                                                            </button>
+                                                        </form>
+                                                    </td>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    
+                    <!-- IDS/IPS Settings -->
+                    <div class="sentinelwp-col-6">
+                        <div class="sentinelwp-card">
+                            <h3><?php echo esc_html__('IDS/IPS Status', 'sentinelwp'); ?></h3>
+                            <div class="ids-ips-status">
+                                <div class="status-item">
+                                    <span class="status-label"><?php echo esc_html__('IDS (Logging):', 'sentinelwp'); ?></span>
+                                    <span class="status-value <?php echo get_option('sentinelwp_ids_enabled', true) ? 'enabled' : 'disabled'; ?>">
+                                        <?php echo get_option('sentinelwp_ids_enabled', true) ? esc_html__('Enabled', 'sentinelwp') : esc_html__('Disabled', 'sentinelwp'); ?>
+                                    </span>
+                                </div>
+                                <div class="status-item">
+                                    <span class="status-label"><?php echo esc_html__('IPS (Blocking):', 'sentinelwp'); ?></span>
+                                    <span class="status-value <?php echo get_option('sentinelwp_ips_enabled', true) ? 'enabled' : 'disabled'; ?>">
+                                        <?php echo get_option('sentinelwp_ips_enabled', true) ? esc_html__('Enabled', 'sentinelwp') : esc_html__('Disabled', 'sentinelwp'); ?>
+                                    </span>
+                                </div>
+                                <div class="status-item">
+                                    <span class="status-label"><?php echo esc_html__('Block Duration:', 'sentinelwp'); ?></span>
+                                    <span class="status-value"><?php echo esc_html(get_option('sentinelwp_ids_block_duration', 10)); ?> <?php echo esc_html__('minutes', 'sentinelwp'); ?></span>
+                                </div>
+                            </div>
+                            <p>
+                                <a href="<?php echo esc_url(admin_url('admin.php?page=sentinelwp-settings&tab=ids-ips')); ?>" class="button button-primary">
+                                    <?php echo esc_html__('Configure Settings', 'sentinelwp'); ?>
+                                </a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Intrusion Logs Section -->
+                <div class="sentinelwp-row">
+                    <div class="sentinelwp-col-12">
+                        <div class="sentinelwp-card">
+                            <div class="card-header">
+                                <h3><?php echo esc_html__('Recent Intrusion Attempts', 'sentinelwp'); ?></h3>
+                                <form method="post" style="display: inline;">
+                                    <?php wp_nonce_field('sentinelwp_ids_ips', 'sentinelwp_ids_ips_nonce'); ?>
+                                    <input type="hidden" name="action" value="clear_logs">
+                                    <button type="submit" class="button button-secondary" 
+                                            onclick="return confirm('<?php echo esc_js__('Are you sure you want to clear all intrusion logs?', 'sentinelwp'); ?>')">
+                                        <?php echo esc_html__('Clear Logs', 'sentinelwp'); ?>
+                                    </button>
+                                </form>
+                            </div>
+                            
+                            <?php if (empty($intrusion_logs)): ?>
+                                <p><?php echo esc_html__('No intrusion attempts recorded yet.', 'sentinelwp'); ?></p>
+                            <?php else: ?>
+                                <div class="intrusion-logs-table">
+                                    <table class="wp-list-table widefat fixed striped">
+                                        <thead>
+                                            <tr>
+                                                <th><?php echo esc_html__('Time', 'sentinelwp'); ?></th>
+                                                <th><?php echo esc_html__('IP Address', 'sentinelwp'); ?></th>
+                                                <th><?php echo esc_html__('Attack Type', 'sentinelwp'); ?></th>
+                                                <th><?php echo esc_html__('Details', 'sentinelwp'); ?></th>
+                                                <th><?php echo esc_html__('User Agent', 'sentinelwp'); ?></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php foreach ($intrusion_logs as $log): ?>
+                                                <tr>
+                                                    <td><?php echo esc_html($log['time']); ?></td>
+                                                    <td><code><?php echo esc_html($log['ip']); ?></code></td>
+                                                    <td>
+                                                        <span class="attack-type attack-type-<?php echo esc_attr($log['attack_type']); ?>">
+                                                            <?php echo esc_html(ucfirst(str_replace('_', ' ', $log['attack_type']))); ?>
+                                                        </span>
+                                                    </td>
+                                                    <td title="<?php echo esc_attr($log['payload']); ?>">
+                                                        <?php echo esc_html(strlen($log['payload']) > 50 ? substr($log['payload'], 0, 50) . '...' : $log['payload']); ?>
+                                                    </td>
+                                                    <td title="<?php echo esc_attr($log['user_agent']); ?>">
+                                                        <?php echo esc_html(strlen($log['user_agent']) > 30 ? substr($log['user_agent'], 0, 30) . '...' : $log['user_agent']); ?>
+                                                    </td>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <style>
+        .ids-ips-status .status-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .ids-ips-status .status-item:last-child {
+            border-bottom: none;
+        }
+        .status-value.enabled {
+            color: #46b450;
+            font-weight: bold;
+        }
+        .status-value.disabled {
+            color: #dc3232;
+            font-weight: bold;
+        }
+        .attack-type {
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .attack-type-brute_force_login {
+            background-color: #dc3232;
+            color: white;
+        }
+        .attack-type-sql_injection {
+            background-color: #ff6900;
+            color: white;
+        }
+        .attack-type-xss_attempt {
+            background-color: #ffb900;
+            color: white;
+        }
+        .attack-type-xmlrpc_flood {
+            background-color: #826eb4;
+            color: white;
+        }
+        .attack-type-ip_blocked {
+            background-color: #555;
+            color: white;
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .blocked-ips-table table,
+        .intrusion-logs-table table {
+            margin-top: 10px;
+        }
+        </style>
+        <?php
     }
 }

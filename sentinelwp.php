@@ -5,12 +5,13 @@
  * Description: Hybrid security scanner for WordPress with ClamAV integration and AI-powered analysis using Google Gemini API.
  * Version: 1.0.1
  * Author: Teguh Rijanandi
- * Author URI: https://github.com/teguh02/SentinelWP
+ * Author URI: https://www.linkedin.com/in/teguhrijanandi
  * License: GPL v2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: sentinelwp
  * Domain Path: /languages
- * Icon URI: assets/images/icon-128x128.png
+ * Requires PHP: 8.0
+ * Tested up to: 6.8
  */
 
 // Prevent direct access
@@ -18,8 +19,18 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+// Check PHP version compatibility
+if (version_compare(PHP_VERSION, '8.0', '<')) {
+    add_action('admin_notices', function() {
+        echo '<div class="error notice">';
+        echo '<p><strong>SentinelWP:</strong> This plugin requires PHP 8.0 or higher. You are running PHP ' . esc_html(PHP_VERSION) . '. Please update your PHP version.</p>';
+        echo '</div>';
+    });
+    return;
+}
+
 // Define plugin constants
-define('SENTINELWP_VERSION', '1.0.0');
+define('SENTINELWP_VERSION', '1.0.1');
 define('SENTINELWP_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('SENTINELWP_PLUGIN_PATH', plugin_dir_path(__FILE__));
 define('SENTINELWP_PLUGIN_FILE', __FILE__);
@@ -80,6 +91,7 @@ class SentinelWP {
         require_once SENTINELWP_PLUGIN_PATH . 'includes/class-ai-advisor.php';
         require_once SENTINELWP_PLUGIN_PATH . 'includes/class-notifications.php';
         require_once SENTINELWP_PLUGIN_PATH . 'includes/class-attack-detector.php';
+        require_once SENTINELWP_PLUGIN_PATH . 'includes/class-ids-ips.php';
         require_once SENTINELWP_PLUGIN_PATH . 'includes/helpers.php';
     }
     
@@ -94,13 +106,15 @@ class SentinelWP {
         SentinelWP_AI_Advisor::instance();
         SentinelWP_Notifications::instance();
         SentinelWP_Attack_Detector::instance();
+        SentinelWP_IDS_IPS::instance();
     }
     
     /**
      * Initialize plugin
      */
     public function init() {
-        load_plugin_textdomain('sentinelwp', false, dirname(plugin_basename(__FILE__)) . '/languages');
+        // WordPress automatically loads translations for plugins hosted on WordPress.org since version 4.6
+        // Manual load_plugin_textdomain() call is no longer needed
     }
     
     /**
@@ -179,6 +193,15 @@ class SentinelWP {
         
         add_submenu_page(
             'sentinelwp',
+            __('IDS/IPS Security', 'sentinelwp'),
+            __('IDS/IPS', 'sentinelwp'),
+            'manage_options',
+            'sentinelwp-ids-ips',
+            array($this, 'ids_ips_page')
+        );
+        
+        add_submenu_page(
+            'sentinelwp',
             __('Settings', 'sentinelwp'),
             __('Settings', 'sentinelwp'),
             'manage_options',
@@ -249,6 +272,13 @@ class SentinelWP {
      */
     public function ai_advisor_page() {
         SentinelWP_Dashboard::render_ai_advisor();
+    }
+    
+    /**
+     * IDS/IPS page callback
+     */
+    public function ids_ips_page() {
+        SentinelWP_Dashboard::render_ids_ips();
     }
     
     /**
@@ -357,7 +387,10 @@ class SentinelWP {
             'sentinelwp_notification_email' => get_option('admin_email'),
             'sentinelwp_telegram_enabled' => false,
             'sentinelwp_gemini_enabled' => false,
-            'sentinelwp_gemini_model' => 'gemini-2.5-flash'
+            'sentinelwp_gemini_model' => 'gemini-2.5-flash',
+            'sentinelwp_ids_enabled' => true,
+            'sentinelwp_ips_enabled' => true,
+            'sentinelwp_ids_block_duration' => 10
         );
         
         foreach ($defaults as $key => $value) {
@@ -394,7 +427,10 @@ class SentinelWP {
             'sentinelwp_telegram_chat_id',
             'sentinelwp_gemini_enabled',
             'sentinelwp_gemini_api_key',
-            'sentinelwp_gemini_model'
+            'sentinelwp_gemini_model',
+            'sentinelwp_ids_enabled',
+            'sentinelwp_ips_enabled',
+            'sentinelwp_ids_block_duration'
         );
         
         foreach ($options as $option) {
