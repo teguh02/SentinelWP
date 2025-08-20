@@ -592,4 +592,288 @@ class SentinelWP_Notifications {
             $this->send_telegram_notification($summary_data);
         }
     }
+    
+    /**
+     * Send attack notification
+     */
+    public function send_attack_notification($event_type, $ip_address, $description, $severity, $additional_data = array()) {
+        // Check if attack notifications are enabled
+        if (!get_option('sentinelwp_notify_attacks', true)) {
+            return;
+        }
+        
+        $notification_data = array(
+            'type' => 'attack_detected',
+            'event_type' => $event_type,
+            'ip_address' => $ip_address,
+            'description' => $description,
+            'severity' => $severity,
+            'additional_data' => $additional_data,
+            'timestamp' => current_time('mysql'),
+            'site_url' => home_url()
+        );
+        
+        // Send email notification for high/critical severity attacks
+        if (in_array($severity, array('high', 'critical')) && get_option('sentinelwp_notification_email')) {
+            $this->send_attack_email_notification($notification_data);
+        }
+        
+        // Send Telegram notification for all attacks if enabled
+        if (get_option('sentinelwp_telegram_enabled', false)) {
+            $this->send_attack_telegram_notification($notification_data);
+        }
+        
+        // Log the notification
+        SentinelWP_Logger::info('Attack notification sent', array(
+            'event_type' => $event_type,
+            'ip_address' => $ip_address,
+            'severity' => $severity,
+            'email_sent' => in_array($severity, array('high', 'critical')),
+            'telegram_sent' => get_option('sentinelwp_telegram_enabled', false)
+        ));
+    }
+    
+    /**
+     * Send attack email notification
+     */
+    private function send_attack_email_notification($data) {
+        $to = get_option('sentinelwp_notification_email', get_option('admin_email'));
+        $site_name = get_bloginfo('name');
+        
+        $subject = sprintf('[%s] Security Alert - %s Detected', 
+            $site_name, 
+            ucfirst(str_replace('_', ' ', $data['event_type']))
+        );
+        
+        // Create email content
+        $message = $this->format_attack_email_message($data);
+        
+        $headers = array(
+            'Content-Type: text/html; charset=UTF-8',
+            'From: SentinelWP <' . get_option('admin_email') . '>'
+        );
+        
+        $sent = wp_mail($to, $subject, $message, $headers);
+        
+        if (!$sent) {
+            SentinelWP_Logger::error('Failed to send attack email notification', array(
+                'to' => $to,
+                'subject' => $subject,
+                'event_type' => $data['event_type']
+            ));
+        }
+        
+        return $sent;
+    }
+    
+    /**
+     * Format attack email message
+     */
+    private function format_attack_email_message($data) {
+        $severity_colors = array(
+            'low' => '#28a745',
+            'medium' => '#ffc107', 
+            'high' => '#fd7e14',
+            'critical' => '#dc3545'
+        );
+        
+        $severity_color = $severity_colors[$data['severity']] ?? '#6c757d';
+        
+        $attack_types = array(
+            'brute_force' => 'Brute Force Attack',
+            'xmlrpc_abuse' => 'XML-RPC Abuse',
+            'malicious_upload' => 'Malicious File Upload',
+            'suspicious_attachment' => 'Suspicious Attachment Upload',
+            'direct_php_creation' => 'Direct PHP File Creation'
+        );
+        
+        $attack_name = $attack_types[$data['event_type']] ?? 'Security Incident';
+        
+        ob_start();
+        ?>
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>Security Alert</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+                .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+                .header { background: <?php echo esc_attr($severity_color); ?>; color: white; padding: 20px; text-align: center; }
+                .content { padding: 30px; }
+                .alert-box { background: #f8f9fa; border-left: 4px solid <?php echo esc_attr($severity_color); ?>; padding: 15px; margin: 20px 0; }
+                .details-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+                .details-table th, .details-table td { text-align: left; padding: 8px 12px; border-bottom: 1px solid #e9ecef; }
+                .details-table th { background: #f8f9fa; font-weight: bold; }
+                .footer { background: #f8f9fa; padding: 20px; text-align: center; color: #6c757d; }
+                .button { display: inline-block; padding: 12px 24px; background: #007cba; color: white; text-decoration: none; border-radius: 4px; margin: 10px 0; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>🚨 Security Alert</h1>
+                    <h2><?php echo esc_html($attack_name); ?></h2>
+                </div>
+                
+                <div class="content">
+                    <div class="alert-box">
+                        <strong>⚠️ <?php echo esc_html(strtoupper($data['severity'])); ?> SEVERITY ALERT</strong><br>
+                        <?php echo esc_html($data['description']); ?>
+                    </div>
+                    
+                    <table class="details-table">
+                        <tr>
+                            <th>Attack Type</th>
+                            <td><?php echo esc_html($attack_name); ?></td>
+                        </tr>
+                        <tr>
+                            <th>IP Address</th>
+                            <td><?php echo esc_html($data['ip_address']); ?></td>
+                        </tr>
+                        <tr>
+                            <th>Severity</th>
+                            <td><strong style="color: <?php echo esc_attr($severity_color); ?>"><?php echo esc_html(strtoupper($data['severity'])); ?></strong></td>
+                        </tr>
+                        <tr>
+                            <th>Time</th>
+                            <td><?php echo esc_html($data['timestamp']); ?></td>
+                        </tr>
+                        <tr>
+                            <th>Website</th>
+                            <td><a href="<?php echo esc_url($data['site_url']); ?>"><?php echo esc_html($data['site_url']); ?></a></td>
+                        </tr>
+                    </table>
+                    
+                    <?php if (!empty($data['additional_data'])): ?>
+                    <h3>Additional Information:</h3>
+                    <ul>
+                        <?php foreach ($data['additional_data'] as $key => $value): ?>
+                            <li><strong><?php echo esc_html(ucfirst(str_replace('_', ' ', $key))); ?>:</strong> <?php echo esc_html($value); ?></li>
+                        <?php endforeach; ?>
+                    </ul>
+                    <?php endif; ?>
+                    
+                    <div style="text-align: center; margin: 30px 0;">
+                        <a href="<?php echo esc_url(admin_url('admin.php?page=sentinelwp-notifications')); ?>" class="button">
+                            View Security Dashboard
+                        </a>
+                    </div>
+                    
+                    <div class="alert-box">
+                        <strong>Recommended Actions:</strong>
+                        <ul>
+                            <?php if ($data['event_type'] === 'brute_force'): ?>
+                                <li>Consider blocking IP <?php echo esc_html($data['ip_address']); ?> at the firewall level</li>
+                                <li>Review user account security and enforce strong passwords</li>
+                                <li>Enable two-factor authentication if not already active</li>
+                            <?php elseif ($data['event_type'] === 'xmlrpc_abuse'): ?>
+                                <li>Consider disabling XML-RPC if not needed</li>
+                                <li>Block IP <?php echo esc_html($data['ip_address']); ?> or limit XML-RPC access</li>
+                            <?php elseif (in_array($data['event_type'], array('malicious_upload', 'direct_php_creation'))): ?>
+                                <li>The suspicious file has been automatically quarantined</li>
+                                <li>Review file upload permissions and restrictions</li>
+                                <li>Scan for other potentially malicious files</li>
+                            <?php endif; ?>
+                            <li>Monitor your website for any unusual activity</li>
+                            <li>Check your access logs for related suspicious activity</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="footer">
+                    <p>This alert was generated by SentinelWP Security Plugin</p>
+                    <p>If you believe this is a false positive, please review the security logs or contact support.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        <?php
+        return ob_get_clean();
+    }
+    
+    /**
+     * Send attack Telegram notification
+     */
+    private function send_attack_telegram_notification($data) {
+        $bot_token = get_option('sentinelwp_telegram_bot_token');
+        $chat_id = get_option('sentinelwp_telegram_chat_id');
+        
+        if (empty($bot_token) || empty($chat_id)) {
+            SentinelWP_Logger::warning('Telegram notification skipped - missing bot token or chat ID');
+            return false;
+        }
+        
+        $severity_emojis = array(
+            'low' => '🟡',
+            'medium' => '🟠', 
+            'high' => '🔴',
+            'critical' => '🚨'
+        );
+        
+        $severity_emoji = $severity_emojis[$data['severity']] ?? '⚪';
+        
+        $attack_types = array(
+            'brute_force' => '🔓 Brute Force Attack',
+            'xmlrpc_abuse' => '🤖 XML-RPC Abuse',
+            'malicious_upload' => '☠️ Malicious Upload',
+            'suspicious_attachment' => '📎 Suspicious File',
+            'direct_php_creation' => '💀 Direct PHP Creation'
+        );
+        
+        $attack_name = $attack_types[$data['event_type']] ?? '⚠️ Security Incident';
+        
+        $message = sprintf(
+            "%s *SECURITY ALERT* %s\n\n" .
+            "*%s*\n" .
+            "%s\n\n" .
+            "🌐 *Site:* %s\n" .
+            "🌍 *IP:* `%s`\n" .
+            "⚡ *Severity:* %s\n" .
+            "🕐 *Time:* %s\n\n" .
+            "[View Dashboard](%s)",
+            $severity_emoji,
+            $severity_emoji,
+            $attack_name,
+            $data['description'],
+            parse_url($data['site_url'], PHP_URL_HOST),
+            $data['ip_address'],
+            strtoupper($data['severity']),
+            $data['timestamp'],
+            admin_url('admin.php?page=sentinelwp-notifications')
+        );
+        
+        $telegram_data = array(
+            'chat_id' => $chat_id,
+            'text' => $message,
+            'parse_mode' => 'Markdown',
+            'disable_web_page_preview' => true
+        );
+        
+        $response = wp_remote_post('https://api.telegram.org/bot' . $bot_token . '/sendMessage', array(
+            'body' => $telegram_data,
+            'timeout' => 15
+        ));
+        
+        if (is_wp_error($response)) {
+            SentinelWP_Logger::error('Failed to send Telegram attack notification', array(
+                'error' => $response->get_error_message(),
+                'event_type' => $data['event_type']
+            ));
+            return false;
+        }
+        
+        $body = wp_remote_retrieve_body($response);
+        $result = json_decode($body, true);
+        
+        if (!isset($result['ok']) || !$result['ok']) {
+            SentinelWP_Logger::error('Telegram API error for attack notification', array(
+                'response' => $result,
+                'event_type' => $data['event_type']
+            ));
+            return false;
+        }
+        
+        return true;
+    }
 }

@@ -38,6 +38,10 @@ class SentinelWP_Dashboard {
         add_action('wp_ajax_sentinelwp_check_database', array($this, 'ajax_check_database'));
         add_action('wp_ajax_sentinelwp_migrate_database', array($this, 'ajax_migrate_database'));
         add_action('wp_ajax_sentinelwp_generate_issue_report', array($this, 'ajax_generate_issue_report'));
+        add_action('wp_ajax_sentinelwp_mark_notification_read', array($this, 'ajax_mark_notification_read'));
+        add_action('wp_ajax_sentinelwp_delete_notification', array($this, 'ajax_delete_notification'));
+        add_action('wp_ajax_sentinelwp_mark_notification_read', array($this, 'ajax_mark_notification_read'));
+        add_action('wp_ajax_sentinelwp_delete_notification', array($this, 'ajax_delete_notification'));
     }
     
     /**
@@ -45,12 +49,29 @@ class SentinelWP_Dashboard {
      */
     public static function render_dashboard() {
         $database = SentinelWP_Database::instance();
+        $attack_detector = SentinelWP_Attack_Detector::instance();
         $system_status = get_option('sentinelwp_system_status', array());
         $stats = $database->get_security_stats();
+        $attack_status = $attack_detector->get_attack_status();
         
         ?>
         <div class="wrap sentinelwp-dashboard">
             <h1><?php _e('SentinelWP Security Dashboard', 'sentinelwp'); ?></h1>
+            
+            <?php if ($attack_status['under_attack']): ?>
+            <div class="notice notice-error sentinelwp-attack-banner">
+                <h2>🚨 <?php _e('Security Alert - Site Under Attack', 'sentinelwp'); ?></h2>
+                <p><?php echo esc_html($attack_status['message']); ?></p>
+                <p>
+                    <a href="<?php echo admin_url('admin.php?page=sentinelwp-notifications'); ?>" class="button button-primary">
+                        <?php _e('View Attack Details', 'sentinelwp'); ?>
+                    </a>
+                    <a href="<?php echo admin_url('admin.php?page=sentinelwp-settings'); ?>" class="button">
+                        <?php _e('Configure Security Settings', 'sentinelwp'); ?>
+                    </a>
+                </p>
+            </div>
+            <?php endif; ?>
             
             <!-- System Status Cards -->
             <div class="sentinelwp-status-cards">
@@ -683,6 +704,10 @@ class SentinelWP_Dashboard {
                                 <label>
                                     <input type="checkbox" name="notify_threats" value="1" <?php checked(get_option('sentinelwp_notify_threats', true)); ?> />
                                     <?php _e('Send immediate alerts for threats', 'sentinelwp'); ?>
+                                </label><br>
+                                <label>
+                                    <input type="checkbox" name="notify_under_attack" value="1" <?php checked(get_option('sentinelwp_notify_under_attack', true)); ?> />
+                                    <?php _e('Send notifications when site is under attack', 'sentinelwp'); ?>
                                 </label>
                             </td>
                         </tr>
@@ -1008,10 +1033,18 @@ class SentinelWP_Dashboard {
                 var $btn = $(this);
                 var $status = $('#report-status');
                 
+                console.log('SentinelWP: Generate issue report button clicked');
+                
                 // Validate required fields
                 var issueType = $('#issue-type').val();
                 var issueTitle = $('#issue-title').val().trim();
                 var issueDescription = $('#issue-description').val().trim();
+                
+                console.log('SentinelWP: Form data collected', {
+                    issueType: issueType,
+                    titleLength: issueTitle.length,
+                    descriptionLength: issueDescription.length
+                });
                 
                 if (!issueTitle) {
                     $status.html('<div class="notice notice-error"><p>Please provide an issue title.</p></div>');
@@ -1036,11 +1069,16 @@ class SentinelWP_Dashboard {
                     include_logs: $('#include-logs').is(':checked')
                 };
                 
+                console.log('SentinelWP: Sending AJAX request', requestData);
+                
                 $.ajax({
                     url: sentinelwp_ajax.ajax_url,
                     type: 'POST',
                     data: requestData,
+                    timeout: 30000, // 30 second timeout
                     success: function(response) {
+                        console.log('SentinelWP: AJAX response received', response);
+                        
                         if (response.success) {
                             var githubUrl = response.data.github_url;
                             $status.html('<div class="notice notice-success"><p>Issue report generated! <a href="' + githubUrl + '" target="_blank" class="button button-secondary">Open GitHub Issue</a></p></div>');
@@ -1051,8 +1089,24 @@ class SentinelWP_Dashboard {
                             $status.html('<div class="notice notice-error"><p>Failed to generate report: ' + response.data + '</p></div>');
                         }
                     },
-                    error: function() {
-                        $status.html('<div class="notice notice-error"><p>An error occurred while generating the report.</p></div>');
+                    error: function(xhr, status, error) {
+                        console.error('SentinelWP: AJAX error', {
+                            status: status,
+                            error: error,
+                            responseText: xhr.responseText,
+                            statusCode: xhr.status
+                        });
+                        
+                        var errorMessage = 'An error occurred while generating the report.';
+                        if (status === 'timeout') {
+                            errorMessage = 'Request timed out. Please try again.';
+                        } else if (xhr.responseJSON && xhr.responseJSON.data) {
+                            errorMessage = 'Server error: ' + xhr.responseJSON.data;
+                        } else if (error) {
+                            errorMessage = 'Network error: ' + error;
+                        }
+                        
+                        $status.html('<div class="notice notice-error"><p>' + errorMessage + '</p></div>');
                     },
                     complete: function() {
                         $btn.prop('disabled', false).text('Generate Issue Report');
@@ -1545,10 +1599,28 @@ class SentinelWP_Dashboard {
      * AJAX handler for generating issue reports
      */
     public function ajax_generate_issue_report() {
-        check_ajax_referer('sentinelwp_nonce', 'nonce');
+        // Add detailed logging for debugging
+        SentinelWP_Logger::info('AJAX handler called for issue report generation', array(
+            'user_id' => get_current_user_id(),
+            'post_data' => $_POST
+        ));
+        
+        // Check nonce
+        if (!check_ajax_referer('sentinelwp_nonce', 'nonce', false)) {
+            SentinelWP_Logger::error('Nonce verification failed for issue report', array(
+                'provided_nonce' => $_POST['nonce'] ?? 'missing',
+                'user_id' => get_current_user_id()
+            ));
+            wp_send_json_error('Security verification failed');
+            return;
+        }
         
         if (!current_user_can('manage_options')) {
+            SentinelWP_Logger::error('Insufficient permissions for issue report', array(
+                'user_id' => get_current_user_id()
+            ));
             wp_send_json_error('Insufficient permissions');
+            return;
         }
         
         try {
@@ -1558,16 +1630,18 @@ class SentinelWP_Dashboard {
             $include_system_info = isset($_POST['include_system_info']) && $_POST['include_system_info'] === 'true';
             $include_logs = isset($_POST['include_logs']) && $_POST['include_logs'] === 'true';
             
+            SentinelWP_Logger::info('Processing issue report request', array(
+                'issue_type' => $issue_type,
+                'title_length' => strlen($issue_title),
+                'description_length' => strlen($issue_description),
+                'include_system_info' => $include_system_info,
+                'include_logs' => $include_logs
+            ));
+            
             if (empty($issue_title) || empty($issue_description)) {
                 wp_send_json_error('Issue title and description are required');
+                return;
             }
-            
-            SentinelWP_Logger::info('Issue report generation requested', array(
-                'issue_type' => $issue_type,
-                'include_system_info' => $include_system_info,
-                'include_logs' => $include_logs,
-                'user_id' => get_current_user_id()
-            ));
             
             // Prepare issue content
             $issue_content = $this->build_issue_report_content(
@@ -1578,8 +1652,17 @@ class SentinelWP_Dashboard {
                 $include_logs
             );
             
+            SentinelWP_Logger::info('Issue content built', array(
+                'content_length' => strlen($issue_content)
+            ));
+            
             // Generate GitHub issue URL
             $github_url = $this->generate_github_issue_url($issue_type, $issue_title, $issue_content);
+            
+            SentinelWP_Logger::info('GitHub URL generated successfully', array(
+                'url_length' => strlen($github_url),
+                'issue_type' => $issue_type
+            ));
             
             wp_send_json_success(array(
                 'message' => 'Issue report generated successfully',
@@ -1589,7 +1672,9 @@ class SentinelWP_Dashboard {
         } catch (Exception $e) {
             SentinelWP_Logger::error('Issue report generation failed', array(
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
             ));
             wp_send_json_error('Failed to generate issue report: ' . $e->getMessage());
         }
@@ -1642,8 +1727,19 @@ class SentinelWP_Dashboard {
         // Database status
         $database_status = SentinelWP_Database::get_table_status();
         $system_info .= "\nDatabase Tables:\n";
-        foreach ($database_status as $table => $exists) {
-            $system_info .= "- " . $table . ": " . ($exists ? 'OK' : 'Missing') . "\n";
+        if (isset($database_status['details'])) {
+            foreach ($database_status['details'] as $table_info) {
+                $system_info .= "- " . $table_info['name'] . ": " . $table_info['status'] . "\n";
+            }
+        } else {
+            // Fallback method
+            $tables_info = SentinelWP_Database::tables_exist();
+            foreach ($tables_info['existing'] as $table) {
+                $system_info .= "- " . $table . ": OK\n";
+            }
+            foreach ($tables_info['missing'] as $table) {
+                $system_info .= "- " . $table . ": MISSING\n";
+            }
         }
         
         $system_info .= "```\n\n";
@@ -1658,7 +1754,7 @@ class SentinelWP_Dashboard {
         $logs_content = "```\n";
         
         try {
-            $log_file = SENTINELWP_PLUGIN_DIR . 'logs/sentinelwp-' . date('Y-m-d') . '.log';
+            $log_file = SENTINELWP_PLUGIN_PATH . 'logs/sentinelwp-' . date('Y-m-d') . '.log';
             
             if (file_exists($log_file)) {
                 $log_lines = file($log_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
@@ -1726,5 +1822,493 @@ class SentinelWP_Dashboard {
         );
         
         return $repo_url . '/issues/new?' . http_build_query($params);
+    }
+    
+    /**
+     * Render notifications page
+     */
+    public static function render_notifications() {
+        $database = SentinelWP_Database::instance();
+        $attack_detector = SentinelWP_Attack_Detector::instance();
+        
+        // Get filters from URL parameters
+        $current_filter = array(
+            'status' => sanitize_text_field($_GET['filter_status'] ?? ''),
+            'severity' => sanitize_text_field($_GET['filter_severity'] ?? ''),
+            'event_type' => sanitize_text_field($_GET['filter_event_type'] ?? '')
+        );
+        
+        // Get notifications with filters
+        $notifications = $database->get_notifications($current_filter);
+        $notification_counts = $database->get_notification_counts();
+        $attack_stats = $attack_detector->get_attack_stats();
+        
+        ?>
+        <div class="wrap sentinelwp-notifications">
+            <h1><?php _e('Attack Detection & Notifications', 'sentinelwp'); ?></h1>
+            
+            <!-- Statistics Overview -->
+            <div class="sentinelwp-stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number"><?php echo esc_html($notification_counts['total']); ?></div>
+                    <div class="stat-label"><?php _e('Total Notifications', 'sentinelwp'); ?></div>
+                </div>
+                <div class="stat-card critical">
+                    <div class="stat-number"><?php echo esc_html($notification_counts['by_severity']['critical'] ?? 0); ?></div>
+                    <div class="stat-label"><?php _e('Critical Alerts', 'sentinelwp'); ?></div>
+                </div>
+                <div class="stat-card warning">
+                    <div class="stat-number"><?php echo esc_html($notification_counts['by_severity']['high'] ?? 0); ?></div>
+                    <div class="stat-label"><?php _e('High Priority', 'sentinelwp'); ?></div>
+                </div>
+                <div class="stat-card info">
+                    <div class="stat-number"><?php echo esc_html($notification_counts['by_status']['new'] ?? 0); ?></div>
+                    <div class="stat-label"><?php _e('Unread', 'sentinelwp'); ?></div>
+                </div>
+            </div>
+            
+            <!-- Filters -->
+            <div class="sentinelwp-filters">
+                <form method="GET" class="filter-form">
+                    <input type="hidden" name="page" value="sentinelwp-notifications">
+                    
+                    <select name="filter_severity" onchange="this.form.submit()">
+                        <option value=""><?php _e('All Severities', 'sentinelwp'); ?></option>
+                        <option value="low" <?php selected($current_filter['severity'], 'low'); ?>><?php _e('Low', 'sentinelwp'); ?></option>
+                        <option value="medium" <?php selected($current_filter['severity'], 'medium'); ?>><?php _e('Medium', 'sentinelwp'); ?></option>
+                        <option value="high" <?php selected($current_filter['severity'], 'high'); ?>><?php _e('High', 'sentinelwp'); ?></option>
+                        <option value="critical" <?php selected($current_filter['severity'], 'critical'); ?>><?php _e('Critical', 'sentinelwp'); ?></option>
+                    </select>
+                    
+                    <select name="filter_status" onchange="this.form.submit()">
+                        <option value=""><?php _e('All Statuses', 'sentinelwp'); ?></option>
+                        <option value="new" <?php selected($current_filter['status'], 'new'); ?>><?php _e('New', 'sentinelwp'); ?></option>
+                        <option value="read" <?php selected($current_filter['status'], 'read'); ?>><?php _e('Read', 'sentinelwp'); ?></option>
+                        <option value="resolved" <?php selected($current_filter['status'], 'resolved'); ?>><?php _e('Resolved', 'sentinelwp'); ?></option>
+                    </select>
+                    
+                    <select name="filter_event_type" onchange="this.form.submit()">
+                        <option value=""><?php _e('All Event Types', 'sentinelwp'); ?></option>
+                        <option value="brute_force" <?php selected($current_filter['event_type'], 'brute_force'); ?>><?php _e('Brute Force', 'sentinelwp'); ?></option>
+                        <option value="xmlrpc_abuse" <?php selected($current_filter['event_type'], 'xmlrpc_abuse'); ?>><?php _e('XML-RPC Abuse', 'sentinelwp'); ?></option>
+                        <option value="malicious_upload" <?php selected($current_filter['event_type'], 'malicious_upload'); ?>><?php _e('Malicious Upload', 'sentinelwp'); ?></option>
+                        <option value="suspicious_attachment" <?php selected($current_filter['event_type'], 'suspicious_attachment'); ?>><?php _e('Suspicious File', 'sentinelwp'); ?></option>
+                        <option value="direct_php_creation" <?php selected($current_filter['event_type'], 'direct_php_creation'); ?>><?php _e('Direct PHP Creation', 'sentinelwp'); ?></option>
+                    </select>
+                    
+                    <?php if (!empty(array_filter($current_filter))): ?>
+                    <a href="<?php echo admin_url('admin.php?page=sentinelwp-notifications'); ?>" class="button">
+                        <?php _e('Clear Filters', 'sentinelwp'); ?>
+                    </a>
+                    <?php endif; ?>
+                </form>
+            </div>
+            
+            <!-- Notifications List -->
+            <div class="sentinelwp-notifications-list">
+                <?php if (empty($notifications)): ?>
+                    <div class="no-notifications">
+                        <h3><?php _e('No Attack Notifications', 'sentinelwp'); ?></h3>
+                        <p><?php _e('Great! No security threats have been detected recently.', 'sentinelwp'); ?></p>
+                    </div>
+                <?php else: ?>
+                    <?php foreach ($notifications as $notification): ?>
+                        <?php
+                        $severity_class = 'notification-' . $notification->severity;
+                        $status_class = 'notification-' . $notification->status;
+                        
+                        $event_icons = array(
+                            'brute_force' => '🔓',
+                            'xmlrpc_abuse' => '🤖',
+                            'malicious_upload' => '☠️',
+                            'suspicious_attachment' => '📎',
+                            'direct_php_creation' => '💀'
+                        );
+                        
+                        $event_names = array(
+                            'brute_force' => __('Brute Force Attack', 'sentinelwp'),
+                            'xmlrpc_abuse' => __('XML-RPC Abuse', 'sentinelwp'),
+                            'malicious_upload' => __('Malicious Upload', 'sentinelwp'),
+                            'suspicious_attachment' => __('Suspicious File', 'sentinelwp'),
+                            'direct_php_creation' => __('Direct PHP Creation', 'sentinelwp')
+                        );
+                        
+                        $icon = $event_icons[$notification->event_type] ?? '⚠️';
+                        $event_name = $event_names[$notification->event_type] ?? ucfirst(str_replace('_', ' ', $notification->event_type));
+                        ?>
+                        
+                        <div class="notification-item <?php echo esc_attr($severity_class . ' ' . $status_class); ?>" data-id="<?php echo esc_attr($notification->id); ?>">
+                            <div class="notification-header">
+                                <div class="notification-icon"><?php echo $icon; ?></div>
+                                <div class="notification-meta">
+                                    <h4 class="notification-title"><?php echo esc_html($event_name); ?></h4>
+                                    <div class="notification-details">
+                                        <span class="severity severity-<?php echo esc_attr($notification->severity); ?>">
+                                            <?php echo esc_html(strtoupper($notification->severity)); ?>
+                                        </span>
+                                        <?php if ($notification->ip_address && $notification->ip_address !== 'unknown'): ?>
+                                        <span class="ip-address">IP: <?php echo esc_html($notification->ip_address); ?></span>
+                                        <?php endif; ?>
+                                        <span class="timestamp"><?php echo esc_html(human_time_diff(strtotime($notification->created_at), current_time('timestamp')) . ' ago'); ?></span>
+                                    </div>
+                                </div>
+                                <div class="notification-actions">
+                                    <?php if ($notification->status === 'new'): ?>
+                                    <button class="button button-small mark-read-btn" data-id="<?php echo esc_attr($notification->id); ?>">
+                                        <?php _e('Mark as Read', 'sentinelwp'); ?>
+                                    </button>
+                                    <?php endif; ?>
+                                    <button class="button button-small delete-btn" data-id="<?php echo esc_attr($notification->id); ?>">
+                                        <?php _e('Delete', 'sentinelwp'); ?>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="notification-description">
+                                <p><?php echo esc_html($notification->description); ?></p>
+                                
+                                <?php if (!empty($notification->additional_data)): ?>
+                                    <?php $additional_data = json_decode($notification->additional_data, true); ?>
+                                    <?php if (is_array($additional_data) && !empty($additional_data)): ?>
+                                    <div class="additional-data">
+                                        <strong><?php _e('Additional Information:', 'sentinelwp'); ?></strong>
+                                        <ul>
+                                            <?php foreach ($additional_data as $key => $value): ?>
+                                                <li><strong><?php echo esc_html(ucfirst(str_replace('_', ' ', $key))); ?>:</strong> <?php echo esc_html($value); ?></li>
+                                            <?php endforeach; ?>
+                                        </ul>
+                                    </div>
+                                    <?php endif; ?>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </div>
+            
+            <!-- Attack Statistics -->
+            <?php if (!empty($attack_stats)): ?>
+            <div class="sentinelwp-attack-stats">
+                <h2><?php _e('Attack Statistics (Last 24 Hours)', 'sentinelwp'); ?></h2>
+                <div class="stats-table">
+                    <table class="widefat">
+                        <thead>
+                            <tr>
+                                <th><?php _e('Attack Type', 'sentinelwp'); ?></th>
+                                <th><?php _e('Severity', 'sentinelwp'); ?></th>
+                                <th><?php _e('Count', 'sentinelwp'); ?></th>
+                                <th><?php _e('Unique IPs', 'sentinelwp'); ?></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($attack_stats as $stat): ?>
+                            <tr>
+                                <td><?php echo esc_html(ucfirst(str_replace('_', ' ', $stat->event_type))); ?></td>
+                                <td><span class="severity-badge severity-<?php echo esc_attr($stat->severity); ?>"><?php echo esc_html(strtoupper($stat->severity)); ?></span></td>
+                                <td><?php echo esc_html($stat->count); ?></td>
+                                <td><?php echo esc_html($stat->unique_ips); ?></td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <?php endif; ?>
+        </div>
+        
+        <style>
+        .sentinelwp-notifications .sentinelwp-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .sentinelwp-notifications .stat-card {
+            background: white;
+            border: 1px solid #ccd0d4;
+            border-radius: 4px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .sentinelwp-notifications .stat-card.critical { border-left: 4px solid #dc3545; }
+        .sentinelwp-notifications .stat-card.warning { border-left: 4px solid #fd7e14; }
+        .sentinelwp-notifications .stat-card.info { border-left: 4px solid #17a2b8; }
+        
+        .sentinelwp-notifications .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .sentinelwp-notifications .sentinelwp-filters {
+            background: #f9f9f9;
+            border: 1px solid #ccd0d4;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        
+        .sentinelwp-notifications .filter-form select {
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .sentinelwp-notifications .notification-item {
+            background: white;
+            border: 1px solid #ccd0d4;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+        
+        .sentinelwp-notifications .notification-item.notification-critical { border-left: 4px solid #dc3545; }
+        .sentinelwp-notifications .notification-item.notification-high { border-left: 4px solid #fd7e14; }
+        .sentinelwp-notifications .notification-item.notification-medium { border-left: 4px solid #ffc107; }
+        .sentinelwp-notifications .notification-item.notification-low { border-left: 4px solid #28a745; }
+        
+        .sentinelwp-notifications .notification-item.notification-new {
+            box-shadow: 0 0 5px rgba(0,123,255,0.3);
+        }
+        
+        .sentinelwp-notifications .notification-header {
+            display: flex;
+            align-items: flex-start;
+            padding: 20px;
+            gap: 15px;
+        }
+        
+        .sentinelwp-notifications .notification-icon {
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+        
+        .sentinelwp-notifications .notification-meta {
+            flex: 1;
+        }
+        
+        .sentinelwp-notifications .notification-title {
+            margin: 0 0 10px 0;
+            font-size: 16px;
+        }
+        
+        .sentinelwp-notifications .notification-details {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .sentinelwp-notifications .severity {
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .sentinelwp-notifications .severity-critical { background: #dc3545; }
+        .sentinelwp-notifications .severity-high { background: #fd7e14; }
+        .sentinelwp-notifications .severity-medium { background: #ffc107; color: #000; }
+        .sentinelwp-notifications .severity-low { background: #28a745; }
+        
+        .sentinelwp-notifications .ip-address {
+            font-family: monospace;
+            background: #f8f9fa;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+        
+        .sentinelwp-notifications .timestamp {
+            color: #6c757d;
+            font-size: 12px;
+        }
+        
+        .sentinelwp-notifications .notification-actions {
+            flex-shrink: 0;
+        }
+        
+        .sentinelwp-notifications .notification-description {
+            padding: 0 20px 20px 59px;
+            color: #555;
+        }
+        
+        .sentinelwp-notifications .additional-data {
+            margin-top: 15px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        
+        .sentinelwp-notifications .additional-data ul {
+            margin: 10px 0 0 0;
+            padding-left: 20px;
+        }
+        
+        .sentinelwp-notifications .no-notifications {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+        
+        .sentinelwp-notifications .sentinelwp-attack-stats {
+            margin-top: 40px;
+        }
+        
+        .sentinelwp-notifications .severity-badge {
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .sentinelwp-attack-banner {
+            border: 2px solid #dc3545 !important;
+            background: #f8d7da !important;
+            color: #721c24 !important;
+        }
+        
+        .sentinelwp-attack-banner h2 {
+            color: #721c24 !important;
+            margin-top: 0;
+        }
+        </style>
+        
+        <script type="text/javascript">
+        jQuery(document).ready(function($) {
+            // Mark notification as read
+            $('.mark-read-btn').on('click', function(e) {
+                e.preventDefault();
+                
+                const $btn = $(this);
+                const notificationId = $btn.data('id');
+                const $notification = $btn.closest('.notification-item');
+                
+                $btn.prop('disabled', true).text('<?php _e('Updating...', 'sentinelwp'); ?>');
+                
+                $.ajax({
+                    url: ajaxurl,
+                    type: 'POST',
+                    data: {
+                        action: 'sentinelwp_mark_notification_read',
+                        notification_id: notificationId,
+                        nonce: '<?php echo wp_create_nonce('sentinelwp_notifications'); ?>'
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            $notification.removeClass('notification-new');
+                            $btn.remove();
+                        } else {
+                            alert('<?php _e('Failed to update notification', 'sentinelwp'); ?>');
+                            $btn.prop('disabled', false).text('<?php _e('Mark as Read', 'sentinelwp'); ?>');
+                        }
+                    },
+                    error: function() {
+                        alert('<?php _e('An error occurred', 'sentinelwp'); ?>');
+                        $btn.prop('disabled', false).text('<?php _e('Mark as Read', 'sentinelwp'); ?>');
+                    }
+                });
+            });
+            
+            // Delete notification
+            $('.delete-btn').on('click', function(e) {
+                e.preventDefault();
+                
+                if (!confirm('<?php _e('Are you sure you want to delete this notification?', 'sentinelwp'); ?>')) {
+                    return;
+                }
+                
+                const $btn = $(this);
+                const notificationId = $btn.data('id');
+                const $notification = $btn.closest('.notification-item');
+                
+                $btn.prop('disabled', true).text('<?php _e('Deleting...', 'sentinelwp'); ?>');
+                
+                $.ajax({
+                    url: ajaxurl,
+                    type: 'POST',
+                    data: {
+                        action: 'sentinelwp_delete_notification',
+                        notification_id: notificationId,
+                        nonce: '<?php echo wp_create_nonce('sentinelwp_notifications'); ?>'
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            $notification.fadeOut(300, function() {
+                                $(this).remove();
+                            });
+                        } else {
+                            alert('<?php _e('Failed to delete notification', 'sentinelwp'); ?>');
+                            $btn.prop('disabled', false).text('<?php _e('Delete', 'sentinelwp'); ?>');
+                        }
+                    },
+                    error: function() {
+                        alert('<?php _e('An error occurred', 'sentinelwp'); ?>');
+                        $btn.prop('disabled', false).text('<?php _e('Delete', 'sentinelwp'); ?>');
+                    }
+                });
+            });
+        });
+        </script>
+        <?php
+    }
+    
+    /**
+     * AJAX handler for marking notification as read
+     */
+    public function ajax_mark_notification_read() {
+        check_ajax_referer('sentinelwp_notifications', 'nonce');
+        
+        if (!current_user_can('manage_options')) {
+            wp_die(__('Insufficient permissions', 'sentinelwp'));
+        }
+        
+        $notification_id = intval($_POST['notification_id'] ?? 0);
+        
+        if ($notification_id <= 0) {
+            wp_send_json_error(__('Invalid notification ID', 'sentinelwp'));
+        }
+        
+        $result = $this->database->update_notification_status($notification_id, 'read');
+        
+        if ($result) {
+            wp_send_json_success(__('Notification marked as read', 'sentinelwp'));
+        } else {
+            wp_send_json_error(__('Failed to update notification', 'sentinelwp'));
+        }
+    }
+    
+    /**
+     * AJAX handler for deleting notification
+     */
+    public function ajax_delete_notification() {
+        check_ajax_referer('sentinelwp_notifications', 'nonce');
+        
+        if (!current_user_can('manage_options')) {
+            wp_die(__('Insufficient permissions', 'sentinelwp'));
+        }
+        
+        $notification_id = intval($_POST['notification_id'] ?? 0);
+        
+        if ($notification_id <= 0) {
+            wp_send_json_error(__('Invalid notification ID', 'sentinelwp'));
+        }
+        
+        global $wpdb;
+        $table_notifications = $wpdb->prefix . 'sentinelwp_notifications';
+        
+        $result = $wpdb->delete(
+            $table_notifications,
+            array('id' => $notification_id),
+            array('%d')
+        );
+        
+        if ($result !== false) {
+            wp_send_json_success(__('Notification deleted', 'sentinelwp'));
+        } else {
+            wp_send_json_error(__('Failed to delete notification', 'sentinelwp'));
+        }
     }
 }

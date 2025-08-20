@@ -1,11 +1,11 @@
 <?php
 /**
  * Plugin Name: SentinelWP - Hybrid Security Scanner
- * Plugin URI: https://example.com/sentinelwp
- * Description: Proactive security plugin for WordPress with hybrid scanning (ClamAV + Heuristic) and AI Security Advisor using Gemini API.
+ * Plugin URI: https://github.com/teguh02/SentinelWP
+ * Description: Hybrid security scanner for WordPress with ClamAV integration and AI-powered analysis using Google Gemini API.
  * Version: 1.0.0
  * Author: SentinelWP Team
- * Author URI: https://example.com
+ * Author URI: https://github.com/teguh02/SentinelWP
  * License: GPL v2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: sentinelwp
@@ -78,6 +78,7 @@ class SentinelWP {
         require_once SENTINELWP_PLUGIN_PATH . 'includes/class-recommendations.php';
         require_once SENTINELWP_PLUGIN_PATH . 'includes/class-ai-advisor.php';
         require_once SENTINELWP_PLUGIN_PATH . 'includes/class-notifications.php';
+        require_once SENTINELWP_PLUGIN_PATH . 'includes/class-attack-detector.php';
         require_once SENTINELWP_PLUGIN_PATH . 'includes/helpers.php';
     }
     
@@ -91,6 +92,7 @@ class SentinelWP {
         SentinelWP_Recommendations::instance();
         SentinelWP_AI_Advisor::instance();
         SentinelWP_Notifications::instance();
+        SentinelWP_Attack_Detector::instance();
     }
     
     /**
@@ -138,6 +140,15 @@ class SentinelWP {
             'manage_options',
             'sentinelwp-scan-results',
             array($this, 'scan_results_page')
+        );
+        
+        add_submenu_page(
+            'sentinelwp',
+            __('Security Notifications', 'sentinelwp'),
+            __('Notifications', 'sentinelwp'),
+            'manage_options',
+            'sentinelwp-notifications',
+            array($this, 'notifications_page')
         );
         
         add_submenu_page(
@@ -212,6 +223,13 @@ class SentinelWP {
     }
     
     /**
+     * Security notifications page callback
+     */
+    public function notifications_page() {
+        SentinelWP_Dashboard::render_notifications();
+    }
+    
+    /**
      * Recommendations page callback
      */
     public function recommendations_page() {
@@ -237,7 +255,9 @@ class SentinelWP {
      */
     public function logs_page() {
         SentinelWP_Dashboard::render_logs();
-    }    /**
+    }
+    
+    /**
      * Check system status
      */
     private function check_system_status() {

@@ -40,6 +40,10 @@
             
             // Refresh stats
             $(document).on('click', '#refresh-stats-btn', this.refreshStats);
+            
+            // Notifications
+            $(document).on('click', '.mark-notification-read', this.markNotificationRead);
+            $(document).on('click', '.delete-notification', this.deleteNotification);
         },
         
         runScan: function(e) {
@@ -648,6 +652,81 @@
             }, 2000);
             
             return interval;
+        },
+        
+        // Mark notification as read
+        markNotificationRead: function(e) {
+            e.preventDefault();
+            
+            const $btn = $(this);
+            const notificationId = $btn.data('id');
+            const $notification = $btn.closest('.notification-item');
+            
+            $btn.prop('disabled', true).text('Updating...');
+            
+            $.ajax({
+                url: sentinelwp_ajax.ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'sentinelwp_mark_notification_read',
+                    notification_id: notificationId,
+                    nonce: sentinelwp_ajax.nonce
+                },
+                success: function(response) {
+                    if (response.success) {
+                        $notification.removeClass('notification-new');
+                        $btn.remove();
+                        SentinelWP.showNotice('success', 'Notification marked as read');
+                    } else {
+                        SentinelWP.showNotice('error', 'Failed to update notification');
+                        $btn.prop('disabled', false).text('Mark as Read');
+                    }
+                },
+                error: function() {
+                    SentinelWP.showNotice('error', 'An error occurred while updating notification');
+                    $btn.prop('disabled', false).text('Mark as Read');
+                }
+            });
+        },
+        
+        // Delete notification
+        deleteNotification: function(e) {
+            e.preventDefault();
+            
+            const $btn = $(this);
+            const notificationId = $btn.data('id');
+            const $notification = $btn.closest('.notification-item');
+            
+            if (!confirm('Are you sure you want to delete this notification?')) {
+                return;
+            }
+            
+            $btn.prop('disabled', true).text('Deleting...');
+            
+            $.ajax({
+                url: sentinelwp_ajax.ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'sentinelwp_delete_notification',
+                    notification_id: notificationId,
+                    nonce: sentinelwp_ajax.nonce
+                },
+                success: function(response) {
+                    if (response.success) {
+                        $notification.fadeOut(300, function() {
+                            $(this).remove();
+                        });
+                        SentinelWP.showNotice('success', 'Notification deleted');
+                    } else {
+                        SentinelWP.showNotice('error', 'Failed to delete notification');
+                        $btn.prop('disabled', false).text('Delete');
+                    }
+                },
+                error: function() {
+                    SentinelWP.showNotice('error', 'An error occurred while deleting notification');
+                    $btn.prop('disabled', false).text('Delete');
+                }
+            });
         }
     };
     

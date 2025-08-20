@@ -119,6 +119,26 @@ class SentinelWP_Database {
             KEY generated_at (generated_at)
         ) $charset_collate;";
         
+        // Table for security notifications (attack detection)
+        $table_notifications = $wpdb->prefix . 'sentinelwp_notifications';
+        $sql_notifications = "CREATE TABLE $table_notifications (
+            id bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+            event_type varchar(50) NOT NULL,
+            ip_address varchar(45),
+            description text NOT NULL,
+            severity enum('low','medium','high','critical') NOT NULL DEFAULT 'medium',
+            status enum('new','read','resolved') NOT NULL DEFAULT 'new',
+            additional_data longtext,
+            created_at datetime DEFAULT CURRENT_TIMESTAMP,
+            updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            KEY event_type (event_type),
+            KEY ip_address (ip_address),
+            KEY severity (severity),
+            KEY status (status),
+            KEY created_at (created_at)
+        ) $charset_collate;";
+        
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
         
         // Create tables and log results
@@ -127,7 +147,8 @@ class SentinelWP_Database {
             'issues' => array('sql' => $sql_issues, 'name' => $table_issues),
             'logs' => array('sql' => $sql_logs, 'name' => $table_logs),
             'settings' => array('sql' => $sql_settings, 'name' => $table_settings),
-            'ai_recommendations' => array('sql' => $sql_ai_recommendations, 'name' => $table_ai_recommendations)
+            'ai_recommendations' => array('sql' => $sql_ai_recommendations, 'name' => $table_ai_recommendations),
+            'notifications' => array('sql' => $sql_notifications, 'name' => $table_notifications)
         );
         
         $results = array();
@@ -174,7 +195,8 @@ class SentinelWP_Database {
             $wpdb->prefix . 'sentinelwp_scans',
             $wpdb->prefix . 'sentinelwp_logs',
             $wpdb->prefix . 'sentinelwp_settings',
-            $wpdb->prefix . 'sentinelwp_ai_recommendations'
+            $wpdb->prefix . 'sentinelwp_ai_recommendations',
+            $wpdb->prefix . 'sentinelwp_notifications'
         );
         
         foreach ($tables as $table) {
@@ -610,7 +632,8 @@ class SentinelWP_Database {
             $wpdb->prefix . 'sentinelwp_issues',
             $wpdb->prefix . 'sentinelwp_logs',
             $wpdb->prefix . 'sentinelwp_settings',
-            $wpdb->prefix . 'sentinelwp_ai_recommendations'
+            $wpdb->prefix . 'sentinelwp_ai_recommendations',
+            $wpdb->prefix . 'sentinelwp_notifications'
         );
         
         $existing_tables = array();
@@ -688,5 +711,138 @@ class SentinelWP_Database {
         SentinelWP_Logger::info('Database table recreation completed');
         
         return $result;
+    }
+    
+    /**
+     * Get security notifications with filtering
+     */
+    public function get_notifications($filters = array()) {
+        global $wpdb;
+        
+        $table_notifications = $wpdb->prefix . 'sentinelwp_notifications';
+        
+        $defaults = array(
+            'status' => '',
+            'severity' => '',
+            'event_type' => '',
+            'limit' => 50,
+            'offset' => 0,
+            'order_by' => 'created_at',
+            'order' => 'DESC'
+        );
+        
+        $filters = wp_parse_args($filters, $defaults);
+        
+        $where_conditions = array('1=1');
+        $where_values = array();
+        
+        if (!empty($filters['status'])) {
+            $where_conditions[] = 'status = %s';
+            $where_values[] = $filters['status'];
+        }
+        
+        if (!empty($filters['severity'])) {
+            $where_conditions[] = 'severity = %s';
+            $where_values[] = $filters['severity'];
+        }
+        
+        if (!empty($filters['event_type'])) {
+            $where_conditions[] = 'event_type = %s';
+            $where_values[] = $filters['event_type'];
+        }
+        
+        $where_clause = implode(' AND ', $where_conditions);
+        
+        $query = $wpdb->prepare(
+            "SELECT * FROM $table_notifications 
+             WHERE $where_clause 
+             ORDER BY {$filters['order_by']} {$filters['order']} 
+             LIMIT %d OFFSET %d",
+            array_merge($where_values, array($filters['limit'], $filters['offset']))
+        );
+        
+        return $wpdb->get_results($query);
+    }
+    
+    /**
+     * Get notification counts by status and severity
+     */
+    public function get_notification_counts() {
+        global $wpdb;
+        
+        $table_notifications = $wpdb->prefix . 'sentinelwp_notifications';
+        
+        $counts = $wpdb->get_results(
+            "SELECT 
+                status,
+                severity,
+                COUNT(*) as count 
+             FROM $table_notifications 
+             GROUP BY status, severity"
+        );
+        
+        $result = array(
+            'total' => 0,
+            'by_status' => array('new' => 0, 'read' => 0, 'resolved' => 0),
+            'by_severity' => array('low' => 0, 'medium' => 0, 'high' => 0, 'critical' => 0)
+        );
+        
+        foreach ($counts as $count) {
+            $result['total'] += $count->count;
+            $result['by_status'][$count->status] = ($result['by_status'][$count->status] ?? 0) + $count->count;
+            $result['by_severity'][$count->severity] = ($result['by_severity'][$count->severity] ?? 0) + $count->count;
+        }
+        
+        return $result;
+    }
+    
+    /**
+     * Update notification status
+     */
+    public function update_notification_status($notification_id, $status) {
+        global $wpdb;
+        
+        $table_notifications = $wpdb->prefix . 'sentinelwp_notifications';
+        
+        $result = $wpdb->update(
+            $table_notifications,
+            array('status' => $status, 'updated_at' => current_time('mysql')),
+            array('id' => $notification_id),
+            array('%s', '%s'),
+            array('%d')
+        );
+        
+        if ($result === false) {
+            SentinelWP_Logger::error('Failed to update notification status', array(
+                'notification_id' => $notification_id,
+                'status' => $status,
+                'error' => $wpdb->last_error
+            ));
+            return false;
+        }
+        
+        return true;
+    }
+    
+    /**
+     * Delete old notifications (cleanup)
+     */
+    public function cleanup_old_notifications($days = 30) {
+        global $wpdb;
+        
+        $table_notifications = $wpdb->prefix . 'sentinelwp_notifications';
+        $cutoff_date = date('Y-m-d H:i:s', strtotime("-$days days"));
+        
+        $deleted = $wpdb->query($wpdb->prepare(
+            "DELETE FROM $table_notifications WHERE created_at < %s AND status != 'new'",
+            $cutoff_date
+        ));
+        
+        SentinelWP_Logger::info('Cleaned up old notifications', array(
+            'deleted_count' => $deleted,
+            'cutoff_date' => $cutoff_date
+        ));
+        
+        return $deleted;
     }
 }
