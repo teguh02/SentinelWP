@@ -142,8 +142,12 @@ class SentinelWP_Scanner {
             // Scan themes
             $this->scan_directory(get_theme_root(), 'themes');
             
-            // Scan plugins
-            $this->scan_directory(WP_PLUGIN_DIR, 'plugins');
+            // Scan plugins (exclude our own plugin directory)
+            $sentinelwp_plugin_dir = basename(SENTINELWP_PLUGIN_PATH);
+            SentinelWP_Logger::info('Scanning plugins directory, excluding SentinelWP', array(
+                'excluded_plugin' => $sentinelwp_plugin_dir
+            ));
+            $this->scan_directory(WP_PLUGIN_DIR, 'plugins', array($sentinelwp_plugin_dir));
             
             // Scan uploads (high priority for malware)
             $this->scan_directory(wp_upload_dir()['basedir'], 'uploads');
@@ -226,7 +230,7 @@ class SentinelWP_Scanner {
      */
     private function scan_wordpress_core() {
         if ($this->get_scan_mode() === 'clamav') {
-            $this->clamav_scan_directory(ABSPATH, 'wordpress_core');
+            $this->clamav_scan_directory(ABSPATH, 'wordpress_core', array('wp-content'));
         } else {
             $this->heuristic_scan_directory(ABSPATH, 'wordpress_core', array('wp-content'));
             $this->check_wordpress_integrity();
@@ -242,7 +246,7 @@ class SentinelWP_Scanner {
         }
         
         if ($this->get_scan_mode() === 'clamav') {
-            $this->clamav_scan_directory($directory, $context);
+            $this->clamav_scan_directory($directory, $context, $exclude);
         } else {
             $this->heuristic_scan_directory($directory, $context, $exclude);
         }
@@ -251,7 +255,7 @@ class SentinelWP_Scanner {
     /**
      * ClamAV scan directory
      */
-    private function clamav_scan_directory($directory, $context) {
+    private function clamav_scan_directory($directory, $context, $exclude = array()) {
         if (!function_exists('shell_exec')) {
             return;
         }
@@ -269,14 +273,14 @@ class SentinelWP_Scanner {
         }
         
         if (!empty($output)) {
-            $this->parse_clamav_output($output, $context);
+            $this->parse_clamav_output($output, $context, $exclude);
         }
     }
     
     /**
      * Parse ClamAV output
      */
-    private function parse_clamav_output($output, $context) {
+    private function parse_clamav_output($output, $context, $exclude = array()) {
         $lines = explode("\n", $output);
         
         foreach ($lines as $line) {
@@ -290,6 +294,20 @@ class SentinelWP_Scanner {
             if (preg_match('/^(.+?):\s*(.+?)\s+FOUND$/', $line, $matches)) {
                 $file_path = trim($matches[1]);
                 $signature = trim($matches[2]);
+                
+                // Check if file is in excluded directory
+                $skip = false;
+                foreach ($exclude as $exclude_dir) {
+                    if (strpos($file_path, DIRECTORY_SEPARATOR . $exclude_dir . DIRECTORY_SEPARATOR) !== false || 
+                        strpos($file_path, DIRECTORY_SEPARATOR . $exclude_dir) === strlen($file_path) - strlen($exclude_dir) - 1) {
+                        $skip = true;
+                        break;
+                    }
+                }
+                
+                if ($skip) {
+                    continue;
+                }
                 
                 $this->add_security_issue(array(
                     'file_path' => $file_path,
@@ -352,6 +370,11 @@ class SentinelWP_Scanner {
      * Heuristic scan single file
      */
     private function heuristic_scan_file($file_path, $context) {
+        // Skip scanning our own plugin files to prevent false positives
+        if (strpos($file_path, SENTINELWP_PLUGIN_PATH) === 0) {
+            return;
+        }
+        
         $content = file_get_contents($file_path);
         if ($content === false) {
             return;
@@ -454,6 +477,11 @@ class SentinelWP_Scanner {
      * Check suspicious file locations
      */
     private function check_suspicious_file_location($file_path, $context) {
+        // Skip checking our own plugin files
+        if (strpos($file_path, SENTINELWP_PLUGIN_PATH) === 0) {
+            return;
+        }
+        
         $filename = basename($file_path);
         $extension = strtolower(pathinfo($file_path, PATHINFO_EXTENSION));
         
@@ -718,13 +746,11 @@ class SentinelWP_Scanner {
         );
         
         if (empty($context_column_exists)) {
-            SentinelWP_Logger::warning('Missing context column in issues table', array(
-                'table' => $table_issues
-            ));
+            SentinelWP_Logger::warning('Database schema validation failed: context column missing');
             return false;
         }
         
-        SentinelWP_Logger::info('Database schema validation passed');
+        SentinelWP_Logger::debug('Database schema validation passed');
         return true;
     }
 }

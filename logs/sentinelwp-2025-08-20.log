@@ -52,3 +52,5 @@
 [2025-08-20 05:10:58] INFO: Database migration completed successfully | User: 1 | IP: 127.0.0.1
 [2025-08-20 05:11:38] INFO: Database schema validation passed | User: 1 | IP: 127.0.0.1
 [2025-08-20 05:12:24] INFO: Database schema validation passed | User: 1 | IP: 127.0.0.1
+[2025-08-20 05:22:20] DEBUG: Database schema validation passed | User: 1 | IP: 127.0.0.1
+[2025-08-20 05:22:29] INFO: Scanning plugins directory, excluding SentinelWP | User: 1 | IP: 127.0.0.1 | Context: {"excluded_plugin":"SentinelWP"}

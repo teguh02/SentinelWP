@@ -130,9 +130,6 @@ class SentinelWP_Dashboard {
                             <button id="run-scan-btn" class="button button-primary">
                                 <?php _e('Run Scan Now', 'sentinelwp'); ?>
                             </button>
-                            <button id="test-progress-btn" class="button button-secondary" style="margin-left: 10px;">
-                                <?php _e('Test Progress', 'sentinelwp'); ?>
-                            </button>
                         </div>
                     </div>
                     <div class="sentinelwp-card-body">

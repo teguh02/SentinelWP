@@ -10,6 +10,7 @@
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: sentinelwp
  * Domain Path: /languages
+ * Icon URI: assets/images/icon-128x128.png
  */
 
 // Prevent direct access
