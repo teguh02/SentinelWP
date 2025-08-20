@@ -120,3 +120,48 @@
 [2025-08-20 15:56:21] INFO: IDS/IPS system initializing | User: 0 | IP: 127.0.0.1 | Context: {"log_file":"/Users/mymac/Herd/wp/wp-content/plugins/SentinelWP/logs/sentinelwp-ids.log","log_file_exists":true,"log_dir_writable":true}
 [2025-08-20 15:56:21] DEBUG: Checking database tables for IDS/IPS system | User: 0 | IP: 127.0.0.1
 [2025-08-20 15:56:21] DEBUG: Database table check | User: 0 | IP: 127.0.0.1 | Context: {"notifications_table":"wp_sentinelwp_notifications","exists":true,"wpdb_ready":true}
+[2025-08-20 15:57:23] INFO: IDS/IPS system initializing | User: 0 | IP: 127.0.0.1 | Context: {"log_file":"/Users/mymac/Herd/wp/wp-content/plugins/SentinelWP/logs/sentinelwp-ids.log","log_file_exists":true,"log_dir_writable":true}
+[2025-08-20 15:57:23] DEBUG: Checking database tables for IDS/IPS system | User: 0 | IP: 127.0.0.1
+[2025-08-20 15:57:23] DEBUG: Database table check | User: 0 | IP: 127.0.0.1 | Context: {"notifications_table":"wp_sentinelwp_notifications","exists":true,"wpdb_ready":true}
+[2025-08-20 15:57:30] INFO: IDS/IPS system initializing | User: 0 | IP: 127.0.0.1 | Context: {"log_file":"/Users/mymac/Herd/wp/wp-content/plugins/SentinelWP/logs/sentinelwp-ids.log","log_file_exists":true,"log_dir_writable":true}
+[2025-08-20 15:57:30] DEBUG: Checking database tables for IDS/IPS system | User: 0 | IP: 127.0.0.1
+[2025-08-20 15:57:30] DEBUG: Database table check | User: 0 | IP: 127.0.0.1 | Context: {"notifications_table":"wp_sentinelwp_notifications","exists":true,"wpdb_ready":true}
+[2025-08-20 15:57:30] DEBUG: Starting IDS/IPS dashboard render | User: 1 | IP: 127.0.0.1 | Context: {"ids_ips_instance":true}
+[2025-08-20 15:57:30] DEBUG: Starting get_intrusion_logs | User: 1 | IP: 127.0.0.1 | Context: {"log_file":"/Users/mymac/Herd/wp/wp-content/plugins/SentinelWP/logs/sentinelwp-ids.log","limit":50,"file_exists":true}
+[2025-08-20 15:57:30] DEBUG: Intrusion log file info | User: 1 | IP: 127.0.0.1 | Context: {"file_size":368,"readable":true}
+[2025-08-20 15:57:30] DEBUG: Read intrusion log file | User: 1 | IP: 127.0.0.1 | Context: {"total_lines":2,"requested_limit":50}
+[2025-08-20 15:57:30] INFO: Successfully retrieved intrusion logs | User: 1 | IP: 127.0.0.1 | Context: {"total_logs":2}
+[2025-08-20 15:57:30] DEBUG: Retrieved intrusion logs for dashboard | User: 1 | IP: 127.0.0.1 | Context: {"logs_count":2}
+[2025-08-20 15:57:30] DEBUG: Starting get_blocked_ips operation | User: 1 | IP: 127.0.0.1 | Context: {"wpdb_available":true}
+[2025-08-20 15:57:30] DEBUG: Preparing database query | User: 1 | IP: 127.0.0.1 | Context: {"table":"wp_options","prefix":"_transient_sentinelwp_blocked_ip_"}
+[2025-08-20 15:57:30] DEBUG: Database query completed | User: 1 | IP: 127.0.0.1 | Context: {"results_count":0,"wpdb_last_error":""}
+[2025-08-20 15:57:30] INFO: Successfully retrieved blocked IPs | User: 1 | IP: 127.0.0.1 | Context: {"total_blocked_ips":0}
+[2025-08-20 15:57:30] DEBUG: Retrieved blocked IPs for dashboard | User: 1 | IP: 127.0.0.1 | Context: {"blocked_count":0}
+[2025-08-20 16:04:00] INFO: IDS/IPS system initializing | User: 0 | IP: 127.0.0.1 | Context: {"log_file":"/Users/mymac/Herd/wp/wp-content/plugins/SentinelWP/logs/sentinelwp-ids.log","log_file_exists":true,"log_dir_writable":true}
+[2025-08-20 16:04:00] DEBUG: Checking database tables for IDS/IPS system | User: 0 | IP: 127.0.0.1
+[2025-08-20 16:04:00] DEBUG: Database table check | User: 0 | IP: 127.0.0.1 | Context: {"notifications_table":"wp_sentinelwp_notifications","exists":true,"wpdb_ready":true}
+[2025-08-20 16:04:00] DEBUG: Starting IDS/IPS dashboard render | User: 1 | IP: 127.0.0.1 | Context: {"ids_ips_instance":true}
+[2025-08-20 16:04:00] DEBUG: Starting get_intrusion_logs | User: 1 | IP: 127.0.0.1 | Context: {"log_file":"/Users/mymac/Herd/wp/wp-content/plugins/SentinelWP/logs/sentinelwp-ids.log","limit":50,"file_exists":true}
+[2025-08-20 16:04:00] DEBUG: Intrusion log file info | User: 1 | IP: 127.0.0.1 | Context: {"file_size":368,"readable":true}
+[2025-08-20 16:04:00] DEBUG: Read intrusion log file | User: 1 | IP: 127.0.0.1 | Context: {"total_lines":2,"requested_limit":50}
+[2025-08-20 16:04:00] INFO: Successfully retrieved intrusion logs | User: 1 | IP: 127.0.0.1 | Context: {"total_logs":2}
+[2025-08-20 16:04:00] DEBUG: Retrieved intrusion logs for dashboard | User: 1 | IP: 127.0.0.1 | Context: {"logs_count":2}
+[2025-08-20 16:04:00] DEBUG: Starting get_blocked_ips operation | User: 1 | IP: 127.0.0.1 | Context: {"wpdb_available":true}
+[2025-08-20 16:04:00] DEBUG: Preparing database query | User: 1 | IP: 127.0.0.1 | Context: {"table":"wp_options","prefix":"_transient_sentinelwp_blocked_ip_"}
+[2025-08-20 16:04:00] DEBUG: Database query completed | User: 1 | IP: 127.0.0.1 | Context: {"results_count":0,"wpdb_last_error":""}
+[2025-08-20 16:04:00] INFO: Successfully retrieved blocked IPs | User: 1 | IP: 127.0.0.1 | Context: {"total_blocked_ips":0}
+[2025-08-20 16:04:00] DEBUG: Retrieved blocked IPs for dashboard | User: 1 | IP: 127.0.0.1 | Context: {"blocked_count":0}
+[2025-08-20 16:04:02] INFO: IDS/IPS system initializing | User: 0 | IP: 127.0.0.1 | Context: {"log_file":"/Users/mymac/Herd/wp/wp-content/plugins/SentinelWP/logs/sentinelwp-ids.log","log_file_exists":true,"log_dir_writable":true}
+[2025-08-20 16:04:02] DEBUG: Checking database tables for IDS/IPS system | User: 0 | IP: 127.0.0.1
+[2025-08-20 16:04:02] DEBUG: Database table check | User: 0 | IP: 127.0.0.1 | Context: {"notifications_table":"wp_sentinelwp_notifications","exists":true,"wpdb_ready":true}
+[2025-08-20 16:04:03] DEBUG: Starting IDS/IPS dashboard render | User: 1 | IP: 127.0.0.1 | Context: {"ids_ips_instance":true}
+[2025-08-20 16:04:03] DEBUG: Starting get_intrusion_logs | User: 1 | IP: 127.0.0.1 | Context: {"log_file":"/Users/mymac/Herd/wp/wp-content/plugins/SentinelWP/logs/sentinelwp-ids.log","limit":50,"file_exists":true}
+[2025-08-20 16:04:03] DEBUG: Intrusion log file info | User: 1 | IP: 127.0.0.1 | Context: {"file_size":368,"readable":true}
+[2025-08-20 16:04:03] DEBUG: Read intrusion log file | User: 1 | IP: 127.0.0.1 | Context: {"total_lines":2,"requested_limit":50}
+[2025-08-20 16:04:03] INFO: Successfully retrieved intrusion logs | User: 1 | IP: 127.0.0.1 | Context: {"total_logs":2}
+[2025-08-20 16:04:03] DEBUG: Retrieved intrusion logs for dashboard | User: 1 | IP: 127.0.0.1 | Context: {"logs_count":2}
+[2025-08-20 16:04:03] DEBUG: Starting get_blocked_ips operation | User: 1 | IP: 127.0.0.1 | Context: {"wpdb_available":true}
+[2025-08-20 16:04:03] DEBUG: Preparing database query | User: 1 | IP: 127.0.0.1 | Context: {"table":"wp_options","prefix":"_transient_sentinelwp_blocked_ip_"}
+[2025-08-20 16:04:03] DEBUG: Database query completed | User: 1 | IP: 127.0.0.1 | Context: {"results_count":0,"wpdb_last_error":""}
+[2025-08-20 16:04:03] INFO: Successfully retrieved blocked IPs | User: 1 | IP: 127.0.0.1 | Context: {"total_blocked_ips":0}
+[2025-08-20 16:04:03] DEBUG: Retrieved blocked IPs for dashboard | User: 1 | IP: 127.0.0.1 | Context: {"blocked_count":0}

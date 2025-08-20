@@ -1173,3 +1173,289 @@
     color: #475569 !important;
     border: 1px solid #cbd5e1 !important;
 }
+
+/* ========================================
+   GLOBAL WORDPRESS ADMIN OVERRIDES FOR SENTINELWP
+======================================== */
+
+/* Force light theme for entire WordPress admin when on SentinelWP pages */
+body.wp-admin[class*="sentinelwp"] *,
+.wp-admin .wrap[class*="sentinelwp"] *,
+.wp-admin .wrap.sentinelwp-notifications *,
+.wp-admin .wrap.sentinelwp-dashboard *,
+.wp-admin .wrap.sentinelwp-settings *,
+.wp-admin .wrap.sentinelwp-ids-ips *,
+.wp-admin .wrap.sentinelwp-ai-advisor *,
+.wp-admin .wrap.sentinelwp-recommendations *,
+.wp-admin .wrap.sentinelwp-logs * {
+    background-color: transparent !important;
+    color: #374151 !important;
+}
+
+/* Override WordPress dark theme completely for plugin pages */
+.wp-admin[class*="sentinelwp"],
+.wp-admin .wrap[class*="sentinelwp"],
+.wp-admin .wrap.sentinelwp-notifications,
+.wp-admin .wrap.sentinelwp-dashboard,
+.wp-admin .wrap.sentinelwp-settings,
+.wp-admin .wrap.sentinelwp-ids-ips,
+.wp-admin .wrap.sentinelwp-ai-advisor,
+.wp-admin .wrap.sentinelwp-recommendations,
+.wp-admin .wrap.sentinelwp-logs {
+    background-color: #f8f9fa !important;
+    color: #374151 !important;
+    color-scheme: light !important;
+}
+
+/* Force all containers to be white/light */
+.wp-admin .wrap[class*="sentinelwp"] .notification-item,
+.wp-admin .wrap[class*="sentinelwp"] .sentinelwp-card,
+.wp-admin .wrap[class*="sentinelwp"] .card,
+.wp-admin .wrap[class*="sentinelwp"] .postbox,
+.wp-admin .wrap[class*="sentinelwp"] .stuffbox,
+.wp-admin .wrap[class*="sentinelwp"] .meta-box-sortables,
+.wp-admin .wrap[class*="sentinelwp"] .metabox-holder,
+.wp-admin .wrap[class*="sentinelwp"] tbody,
+.wp-admin .wrap[class*="sentinelwp"] thead,
+.wp-admin .wrap[class*="sentinelwp"] tfoot,
+.wp-admin .wrap[class*="sentinelwp"] tr,
+.wp-admin .wrap[class*="sentinelwp"] td,
+.wp-admin .wrap[class*="sentinelwp"] th,
+.wp-admin .wrap[class*="sentinelwp"] table {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+    color: #374151 !important;
+}
+
+/* Override any dark backgrounds that might appear */
+.wp-admin .wrap[class*="sentinelwp"] div,
+.wp-admin .wrap[class*="sentinelwp"] section,
+.wp-admin .wrap[class*="sentinelwp"] article,
+.wp-admin .wrap[class*="sentinelwp"] aside,
+.wp-admin .wrap[class*="sentinelwp"] nav,
+.wp-admin .wrap[class*="sentinelwp"] main,
+.wp-admin .wrap[class*="sentinelwp"] header,
+.wp-admin .wrap[class*="sentinelwp"] footer {
+    background-color: transparent !important;
+    background: transparent !important;
+}
+
+/* Special override for notification page specific elements */
+.wp-admin .wrap.sentinelwp-notifications .notification-item,
+.wp-admin .wrap.sentinelwp-notifications .notification-header,
+.wp-admin .wrap.sentinelwp-notifications .notification-content,
+.wp-admin .wrap.sentinelwp-notifications .notification-body,
+.wp-admin .wrap.sentinelwp-notifications .additional-information,
+.wp-admin .wrap.sentinelwp-notifications .stats-card,
+.wp-admin .wrap.sentinelwp-notifications .filter-controls {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+    color: #374151 !important;
+}
+
+/* Force text colors */
+.wp-admin .wrap[class*="sentinelwp"] h1,
+.wp-admin .wrap[class*="sentinelwp"] h2,
+.wp-admin .wrap[class*="sentinelwp"] h3,
+.wp-admin .wrap[class*="sentinelwp"] h4,
+.wp-admin .wrap[class*="sentinelwp"] h5,
+.wp-admin .wrap[class*="sentinelwp"] h6 {
+    color: #1f2937 !important;
+    background: transparent !important;
+}
+
+.wp-admin .wrap[class*="sentinelwp"] p,
+.wp-admin .wrap[class*="sentinelwp"] span,
+.wp-admin .wrap[class*="sentinelwp"] li,
+.wp-admin .wrap[class*="sentinelwp"] label,
+.wp-admin .wrap[class*="sentinelwp"] strong,
+.wp-admin .wrap[class*="sentinelwp"] em,
+.wp-admin .wrap[class*="sentinelwp"] small {
+    color: #4b5563 !important;
+    background: transparent !important;
+}
+
+/* Override WordPress admin CSS variables for dark mode */
+.wp-admin .wrap[class*="sentinelwp"] {
+    --wp-admin-theme-color: #667eea !important;
+    --wp-admin-theme-color-darker-10: #5a67d8 !important;
+    --wp-admin-theme-color-darker-20: #4c51bf !important;
+    --wp-admin-border-width-focus: 2px !important;
+    --wp-admin-focus-color: #667eea !important;
+}
+
+/* Force specific notification elements */
+.wp-admin .notification-item .severity-badge.high,
+.wp-admin .notification-item .attack-type-brute_force_login,
+.wp-admin .notification-item .priority-badge.high {
+    background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+    color: #ffffff !important;
+}
+
+.wp-admin .notification-item .ip-address,
+.wp-admin .notification-item .timestamp,
+.wp-admin .notification-item .technical-info {
+    background: #f1f5f9 !important;
+    color: #475569 !important;
+    border: 1px solid #cbd5e1 !important;
+    padding: 4px 8px !important;
+    border-radius: 4px !important;
+    font-family: monospace !important;
+}
+
+/* Force form elements */
+.wp-admin .wrap[class*="sentinelwp"] input,
+.wp-admin .wrap[class*="sentinelwp"] select,
+.wp-admin .wrap[class*="sentinelwp"] textarea,
+.wp-admin .wrap[class*="sentinelwp"] .form-control {
+    background-color: #ffffff !important;
+    color: #374151 !important;
+    border: 1px solid #d1d5db !important;
+}
+
+/* Override any remaining dark elements with high specificity */
+body.wp-admin .wrap[class*="sentinelwp"] * {
+    color: inherit !important;
+}
+
+body.wp-admin .wrap[class*="sentinelwp"] div:not(.sentinelwp-card-header):not(.progress-fill):not(.score-circle):not(.severity-badge):not(.status-value):not(.attack-type):not(.priority-badge):not(.button):not(.scan-status) {
+    background-color: transparent !important;
+    color: #4b5563 !important;
+}
+
+/* Media query to override system dark mode */
+@media (prefers-color-scheme: dark) {
+    .wp-admin .wrap[class*="sentinelwp"],
+    .wp-admin .wrap[class*="sentinelwp"] * {
+        color-scheme: light !important;
+        background-color: unset !important;
+        color: unset !important;
+    }
+    
+    /* Specific overrides for notification elements */
+    .wp-admin .wrap.sentinelwp-notifications,
+    .wp-admin .wrap.sentinelwp-notifications * {
+        background-color: transparent !important;
+        color: #374151 !important;
+    }
+}
+
+/* ========================================
+   HIGHEST PRIORITY OVERRIDES - LOAD LAST
+======================================== */
+
+/* Use higher CSS specificity to override everything */
+html body.wp-admin .wrap[class*="sentinelwp"] * {
+    background-color: transparent !important;
+    color: #374151 !important;
+}
+
+html body.wp-admin .wrap[class*="sentinelwp"] {
+    background-color: #f8f9fa !important;
+    color: #374151 !important;
+}
+
+/* Cards and containers - highest priority */
+html body.wp-admin .wrap[class*="sentinelwp"] .notification-item,
+html body.wp-admin .wrap[class*="sentinelwp"] .sentinelwp-card,
+html body.wp-admin .wrap[class*="sentinelwp"] .stats-card,
+html body.wp-admin .wrap[class*="sentinelwp"] .filter-controls,
+html body.wp-admin .wrap[class*="sentinelwp"] .additional-information,
+html body.wp-admin .wrap[class*="sentinelwp"] .card,
+html body.wp-admin .wrap[class*="sentinelwp"] .postbox,
+html body.wp-admin .wrap[class*="sentinelwp"] .stuffbox {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+    color: #374151 !important;
+}
+
+/* Target specific classes that might be causing issues */
+html body.wp-admin .wrap.sentinelwp-notifications .notification-item,
+html body.wp-admin .wrap.sentinelwp-notifications .notification-content,
+html body.wp-admin .wrap.sentinelwp-notifications .notification-header,
+html body.wp-admin .wrap.sentinelwp-notifications .notification-body {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+    color: #374151 !important;
+}
+
+/* Override WordPress core styles with maximum specificity */
+html body.wp-admin div.wrap[class*="sentinelwp"] div.notification-item div {
+    background-color: transparent !important;
+    color: #4b5563 !important;
+}
+
+/* Force white background on everything except colored elements */
+html body.wp-admin .wrap[class*="sentinelwp"] *:not(.severity-badge):not(.status-value):not(.attack-type):not(.priority-badge):not(.button):not(.scan-status):not(.sentinelwp-card-header):not(.progress-fill):not(.score-circle) {
+    background-color: transparent !important;
+    color: #4b5563 !important;
+}
+
+/* Ultimate fallback - if nothing else works */
+.wp-admin .wrap * {
+    background-color: transparent !important;
+}
+
+.wp-admin .wrap .notification-item {
+    background-color: #ffffff !important;
+}
+
+/* Use body class targeting for maximum specificity */
+body.toplevel_page_sentinelwp-notifications .wrap,
+body.sentinelwp_page_sentinelwp-dashboard .wrap,
+body.sentinelwp_page_sentinelwp-ids-ips .wrap,
+body.sentinelwp_page_sentinelwp-ai-advisor .wrap,
+body.sentinelwp_page_sentinelwp-recommendations .wrap,
+body.sentinelwp_page_sentinelwp-settings .wrap {
+    background-color: #f8f9fa !important;
+    color: #374151 !important;
+}
+
+body.toplevel_page_sentinelwp-notifications .notification-item,
+body.sentinelwp_page_sentinelwp-dashboard .sentinelwp-card,
+body.sentinelwp_page_sentinelwp-ids-ips .sentinelwp-card,
+body.sentinelwp_page_sentinelwp-ai-advisor .ai-recommendation-item,
+body.sentinelwp_page_sentinelwp-recommendations .recommendation-item {
+    background-color: #ffffff !important;
+    color: #374151 !important;
+}
+
+/* Debug - make everything visible if still having issues */
+.wp-admin [class*="sentinelwp"] *,
+.wp-admin [class*="notification"] * {
+    background-color: transparent !important;
+    color: #374151 !important;
+}
+
+.wp-admin [class*="sentinelwp"] .notification-item,
+.wp-admin [class*="sentinelwp"] .sentinelwp-card,
+.wp-admin [class*="sentinelwp"] .stats-card {
+    background-color: #ffffff !important;
+    border: 1px solid #e5e7eb !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+}
+
+/* Add inline style as backup */
+.notification-item {
+    background: white !important;
+    color: #374151 !important;
+}
+
+/* Force CSS custom properties */
+:root {
+    --sentinelwp-bg-primary: #ffffff;
+    --sentinelwp-bg-secondary: #f8f9fa;
+    --sentinelwp-text-primary: #374151;
+    --sentinelwp-text-secondary: #6b7280;
+}
+
+.wrap[class*="sentinelwp"] {
+    background-color: var(--sentinelwp-bg-secondary) !important;
+    color: var(--sentinelwp-text-primary) !important;
+}
+
+.wrap[class*="sentinelwp"] .notification-item,
+.wrap[class*="sentinelwp"] .sentinelwp-card {
+    background-color: var(--sentinelwp-bg-primary) !important;
+    color: var(--sentinelwp-text-primary) !important;
+}
