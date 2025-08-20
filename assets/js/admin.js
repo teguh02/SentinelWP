@@ -79,7 +79,23 @@
                             window.location.reload();
                         }, 2000);
                     } else {
-                        SentinelWP.showNotice('error', 'Scan failed: ' + response.data);
+                        // Handle different error types
+                        let errorMessage = 'Scan failed: ';
+                        
+                        if (response.data && typeof response.data === 'object') {
+                            if (response.data.type === 'database_error') {
+                                errorMessage += response.data.message + 
+                                              '\\n\\nThis appears to be a database schema issue. ' +
+                                              'Please try recreating the database tables from the Settings page.';
+                            } else {
+                                errorMessage += response.data.message || 'Unknown error occurred';
+                            }
+                        } else {
+                            errorMessage += response.data || 'Unknown error occurred';
+                        }
+                        
+                        SentinelWP.showNotice('error', errorMessage);
+                        console.error('Scan error details:', response);
                     }
                 },
                 error: function(xhr, status, error) {

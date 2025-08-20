@@ -83,6 +83,31 @@ class SentinelWP_Scanner {
     public function run_full_scan() {
         $start_time = microtime(true);
         
+        // Validate database schema before scanning
+        if (!$this->validate_database_schema()) {
+            SentinelWP_Logger::error('Database schema validation failed - attempting migration');
+            
+            // Try to migrate the database
+            if (!SentinelWP_Database::migrate_database()) {
+                SentinelWP_Logger::error('Database migration failed - cannot proceed with scan');
+                return array(
+                    'success' => false,
+                    'error' => 'Database schema is not compatible. Please update the plugin or recreate database tables.'
+                );
+            }
+            
+            // Validate again after migration
+            if (!$this->validate_database_schema()) {
+                SentinelWP_Logger::error('Database schema validation still failed after migration');
+                return array(
+                    'success' => false,
+                    'error' => 'Database schema migration was unsuccessful. Please recreate database tables.'
+                );
+            }
+            
+            SentinelWP_Logger::info('Database migration successful - proceeding with scan');
+        }
+        
         // Initialize scan
         $scan_mode = $this->get_scan_mode();
         $scan_data = array(
@@ -637,7 +662,17 @@ class SentinelWP_Scanner {
         
         $result = $this->run_full_scan();
         
-        if ($result) {
+        if ($result && is_array($result)) {
+            // Check if result contains an error (from database validation failure)
+            if (isset($result['success']) && $result['success'] === false) {
+                wp_send_json_error(array(
+                    'message' => $result['error'],
+                    'type' => 'database_error'
+                ));
+                return;
+            }
+            
+            // Successful scan
             wp_send_json_success(array(
                 'message' => 'Scan completed successfully',
                 'scan_id' => $result['scan_id'],
@@ -645,7 +680,10 @@ class SentinelWP_Scanner {
                 'threats_found' => $result['threats_found']
             ));
         } else {
-            wp_send_json_error('Scan failed');
+            wp_send_json_error(array(
+                'message' => 'Scan failed - unexpected error occurred',
+                'type' => 'general_error'
+            ));
         }
     }
     
@@ -665,5 +703,28 @@ class SentinelWP_Scanner {
             'status' => 'Scanning...',
             'files_scanned' => $this->scan_results['files_scanned'] ?? 0
         ));
+    }
+    
+    /**
+     * Validate database schema to ensure all required columns exist
+     */
+    private function validate_database_schema() {
+        global $wpdb;
+        
+        // Check if context column exists in issues table
+        $table_issues = $wpdb->prefix . 'sentinelwp_issues';
+        $context_column_exists = $wpdb->get_results(
+            $wpdb->prepare("SHOW COLUMNS FROM {$table_issues} LIKE %s", 'context')
+        );
+        
+        if (empty($context_column_exists)) {
+            SentinelWP_Logger::warning('Missing context column in issues table', array(
+                'table' => $table_issues
+            ));
+            return false;
+        }
+        
+        SentinelWP_Logger::info('Database schema validation passed');
+        return true;
     }
 }

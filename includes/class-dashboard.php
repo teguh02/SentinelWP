@@ -37,6 +37,7 @@ class SentinelWP_Dashboard {
         add_action('wp_ajax_sentinelwp_update_ai_recommendation', array($this, 'ajax_update_ai_recommendation'));
         add_action('wp_ajax_sentinelwp_check_database', array($this, 'ajax_check_database'));
         add_action('wp_ajax_sentinelwp_migrate_database', array($this, 'ajax_migrate_database'));
+        add_action('wp_ajax_sentinelwp_migrate_schema', array($this, 'ajax_migrate_schema'));
         add_action('wp_ajax_sentinelwp_generate_issue_report', array($this, 'ajax_generate_issue_report'));
         add_action('wp_ajax_sentinelwp_mark_notification_read', array($this, 'ajax_mark_notification_read'));
         add_action('wp_ajax_sentinelwp_delete_notification', array($this, 'ajax_delete_notification'));
@@ -805,14 +806,20 @@ class SentinelWP_Dashboard {
                     </div>
                     
                     <div id="database-migration" style="margin: 20px 0; border-top: 1px solid #ccd0d4; padding-top: 20px;">
-                        <h3><?php _e('Database Migration', 'sentinelwp'); ?></h3>
-                        <p><?php _e('If tables are missing or corrupted, you can recreate them:', 'sentinelwp'); ?></p>
+                        <h3><?php _e('Database Management', 'sentinelwp'); ?></h3>
+                        <p><?php _e('If you experience scanning errors, try running a database migration first:', 'sentinelwp'); ?></p>
                         <div style="margin: 15px 0;">
+                            <button type="button" id="migrate-schema-btn" class="button button-secondary" style="margin-right: 10px;">
+                                <?php _e('Migrate Database Schema', 'sentinelwp'); ?>
+                            </button>
                             <button type="button" id="migrate-database-btn" class="button button-secondary">
                                 <?php _e('Recreate Database Tables', 'sentinelwp'); ?>
                             </button>
+                            <p class="description" style="color: #666; margin-top: 5px;">
+                                <?php _e('Migration: Updates table schema (safe). Recreate: Rebuilds all tables (warning: may affect data).', 'sentinelwp'); ?>
+                            </p>
                             <p class="description" style="color: #d63638; margin-top: 5px;">
-                                <?php _e('Warning: This will recreate all plugin tables. Existing data will be preserved where possible.', 'sentinelwp'); ?>
+                                <?php _e('Warning: Recreate will rebuild all plugin tables. Existing data will be preserved where possible.', 'sentinelwp'); ?>
                             </p>
                         </div>
                         <div id="migration-results" style="margin-top: 10px;"></div>
@@ -1028,6 +1035,46 @@ class SentinelWP_Dashboard {
                     },
                     complete: function() {
                         $btn.prop('disabled', false).text('Recreate Database Tables');
+                    }
+                });
+            });
+            
+            $('#migrate-schema-btn').click(function() {
+                var $btn = $(this);
+                var $results = $('#migration-results');
+                
+                if (!confirm('Are you sure you want to migrate the database schema? This will add missing columns but is generally safe.')) {
+                    return;
+                }
+                
+                $btn.prop('disabled', true).text('Migrating Schema...');
+                $results.html('<div class="spinner is-active" style="float: none; margin: 0;"></div>');
+                
+                $.ajax({
+                    url: sentinelwp_ajax.ajax_url,
+                    type: 'POST',
+                    data: {
+                        action: 'sentinelwp_migrate_schema',
+                        nonce: sentinelwp_ajax.nonce
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            var html = '<div class="notice notice-success"><p><strong>Schema Migration Complete!</strong></p>';
+                            html += '<p>' + response.data.message + '</p>';
+                            if (response.data.details) {
+                                html += '<p><em>' + response.data.details + '</em></p>';
+                            }
+                            html += '</div>';
+                            $results.html(html);
+                        } else {
+                            $results.html('<div class="notice notice-error"><p>Schema migration failed: ' + response.data + '</p></div>');
+                        }
+                    },
+                    error: function() {
+                        $results.html('<div class="notice notice-error"><p>Failed to migrate schema.</p></div>');
+                    },
+                    complete: function() {
+                        $btn.prop('disabled', false).text('Migrate Database Schema');
                     }
                 });
             });
@@ -1630,6 +1677,44 @@ class SentinelWP_Dashboard {
                 'trace' => $e->getTraceAsString()
             ));
             wp_send_json_error('Database migration failed: ' . $e->getMessage());
+        }
+    }
+    
+    /**
+     * AJAX handler for schema-only migration
+     */
+    public function ajax_migrate_schema() {
+        check_ajax_referer('sentinelwp_nonce', 'nonce');
+        
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error('Insufficient permissions');
+        }
+        
+        try {
+            SentinelWP_Logger::info('Database schema migration started by user', array(
+                'user_id' => get_current_user_id()
+            ));
+            
+            // Run schema migration only
+            $migration_result = SentinelWP_Database::migrate_database();
+            
+            if ($migration_result) {
+                SentinelWP_Logger::info('Database schema migration completed successfully');
+                
+                wp_send_json_success(array(
+                    'message' => 'Database schema migration completed successfully',
+                    'details' => 'Schema has been updated. You can now try running a scan.'
+                ));
+            } else {
+                wp_send_json_error('Schema migration failed. Check logs for details.');
+            }
+            
+        } catch (Exception $e) {
+            SentinelWP_Logger::error('Database schema migration failed', array(
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ));
+            wp_send_json_error('Schema migration failed: ' . $e->getMessage());
         }
     }
     

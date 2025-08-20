@@ -4,7 +4,7 @@
  * Plugin URI: https://github.com/teguh02/SentinelWP
  * Description: Hybrid security scanner for WordPress with ClamAV integration and AI-powered analysis using Google Gemini API.
  * Version: 1.0.0
- * Author: SentinelWP Team
+ * Author: Teguh Rijanandi
  * Author URI: https://github.com/teguh02/SentinelWP
  * License: GPL v2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -106,6 +106,13 @@ class SentinelWP {
      * Admin initialization
      */
     public function admin_init() {
+        // Run migration check for existing installations
+        $migration_version = get_option('sentinelwp_migration_version', '0.0.0');
+        if (version_compare($migration_version, SENTINELWP_VERSION, '<')) {
+            SentinelWP_Database::migrate_database();
+            update_option('sentinelwp_migration_version', SENTINELWP_VERSION);
+        }
+        
         // Check for system requirements
         $this->check_system_status();
     }
@@ -336,6 +343,7 @@ class SentinelWP {
      */
     public function activate() {
         SentinelWP_Database::create_tables();
+        SentinelWP_Database::migrate_database(); // Ensure existing installations get the new schema
         $this->check_system_status();
         
         // Set default options

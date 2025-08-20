@@ -61,6 +61,7 @@ class SentinelWP_Database {
             description text NOT NULL,
             severity varchar(20) NOT NULL DEFAULT 'medium',
             recommendation text,
+            context varchar(100) DEFAULT NULL,
             resolved tinyint(1) NOT NULL DEFAULT 0,
             isolated tinyint(1) NOT NULL DEFAULT 0,
             created_at datetime DEFAULT CURRENT_TIMESTAMP,
@@ -68,6 +69,7 @@ class SentinelWP_Database {
             KEY scan_id (scan_id),
             KEY issue_type (issue_type),
             KEY severity (severity),
+            KEY context (context),
             KEY resolved (resolved),
             FOREIGN KEY (scan_id) REFERENCES $table_scans(id) ON DELETE CASCADE
         ) $charset_collate;";
@@ -252,7 +254,7 @@ class SentinelWP_Database {
         $result = $wpdb->insert(
             $wpdb->prefix . 'sentinelwp_issues',
             $data,
-            array('%d', '%s', '%s', '%s', '%s', '%s', '%d', '%d', '%s')
+            array('%d', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%d', '%s')
         );
         
         return $result !== false ? $wpdb->insert_id : false;
@@ -844,5 +846,42 @@ class SentinelWP_Database {
         ));
         
         return $deleted;
+    }
+    
+    /**
+     * Migrate database schema to add missing columns
+     */
+    public static function migrate_database() {
+        global $wpdb;
+        
+        SentinelWP_Logger::info('Starting database migration');
+        
+        // Check if context column exists in issues table
+        $table_issues = $wpdb->prefix . 'sentinelwp_issues';
+        $context_column_exists = $wpdb->get_results(
+            $wpdb->prepare("SHOW COLUMNS FROM {$table_issues} LIKE %s", 'context')
+        );
+        
+        // Add context column if it doesn't exist
+        if (empty($context_column_exists)) {
+            $sql = "ALTER TABLE {$table_issues} ADD COLUMN context varchar(100) DEFAULT NULL AFTER recommendation";
+            $result = $wpdb->query($sql);
+            
+            if ($result !== false) {
+                // Add index for the new column
+                $wpdb->query("ALTER TABLE {$table_issues} ADD KEY context (context)");
+                SentinelWP_Logger::info('Successfully added context column to issues table');
+            } else {
+                SentinelWP_Logger::error('Failed to add context column to issues table', array(
+                    'error' => $wpdb->last_error
+                ));
+                return false;
+            }
+        } else {
+            SentinelWP_Logger::info('Context column already exists in issues table');
+        }
+        
+        SentinelWP_Logger::info('Database migration completed successfully');
+        return true;
     }
 }

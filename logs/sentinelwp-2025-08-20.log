@@ -29,3 +29,25 @@
 [2025-08-20 04:29:06] INFO: Failed login attempt detected | User: 0 | IP: 127.0.0.1 | Context: {"username":"admin","ip_address":"127.0.0.1","timestamp":"2025-08-20 04:29:06"}
 [2025-08-20 04:29:06] WARNING: Attack detected | User: 0 | IP: 127.0.0.1 | Context: {"event_type":"brute_force","ip_address":"127.0.0.1","description":"Brute force attack detected: 15 failed login attempts in 1 minute","severity":"high","additional_data":{"username":"admin","attempts":15}}
 [2025-08-20 04:29:07] INFO: Attack notification sent | User: 0 | IP: 127.0.0.1 | Context: {"event_type":"brute_force","ip_address":"127.0.0.1","severity":"high","email_sent":true,"telegram_sent":"1"}
+[2025-08-20 05:00:18] INFO: Starting database migration | User: 1 | IP: 127.0.0.1
+[2025-08-20 05:00:18] INFO: Successfully added context column to issues table | User: 1 | IP: 127.0.0.1
+[2025-08-20 05:00:18] INFO: Database migration completed successfully | User: 1 | IP: 127.0.0.1
+[2025-08-20 05:10:58] INFO: Starting database table creation/migration | User: 1 | IP: 127.0.0.1
+[2025-08-20 05:10:58] DEBUG: Database charset and collation | User: 1 | IP: 127.0.0.1 | Context: {"charset_collate":"DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci"}
+[2025-08-20 05:10:58] DEBUG: Creating table: wp_sentinelwp_scans | User: 1 | IP: 127.0.0.1
+[2025-08-20 05:10:58] INFO: Table created successfully: wp_sentinelwp_scans | User: 1 | IP: 127.0.0.1
+[2025-08-20 05:10:58] DEBUG: Creating table: wp_sentinelwp_issues | User: 1 | IP: 127.0.0.1
+[2025-08-20 05:10:58] INFO: Table created successfully: wp_sentinelwp_issues | User: 1 | IP: 127.0.0.1
+[2025-08-20 05:10:58] DEBUG: Creating table: wp_sentinelwp_logs | User: 1 | IP: 127.0.0.1
+[2025-08-20 05:10:58] INFO: Table created successfully: wp_sentinelwp_logs | User: 1 | IP: 127.0.0.1
+[2025-08-20 05:10:58] DEBUG: Creating table: wp_sentinelwp_settings | User: 1 | IP: 127.0.0.1
+[2025-08-20 05:10:58] INFO: Table created successfully: wp_sentinelwp_settings | User: 1 | IP: 127.0.0.1
+[2025-08-20 05:10:58] DEBUG: Creating table: wp_sentinelwp_ai_recommendations | User: 1 | IP: 127.0.0.1
+[2025-08-20 05:10:58] INFO: Table created successfully: wp_sentinelwp_ai_recommendations | User: 1 | IP: 127.0.0.1
+[2025-08-20 05:10:58] DEBUG: Creating table: wp_sentinelwp_notifications | User: 1 | IP: 127.0.0.1
+[2025-08-20 05:10:58] INFO: Table created successfully: wp_sentinelwp_notifications | User: 1 | IP: 127.0.0.1
+[2025-08-20 05:10:58] INFO: Database table creation completed | User: 1 | IP: 127.0.0.1 | Context: {"results":{"scans":[],"issues":{"wp_sentinelwp_issues.foreign":"Added column wp_sentinelwp_issues.foreign"},"logs":[],"settings":[],"ai_recommendations":[],"notifications":[]},"tables_created":["scans","issues","logs","settings","ai_recommendations","notifications"]}
+[2025-08-20 05:10:58] INFO: Starting database migration | User: 1 | IP: 127.0.0.1
+[2025-08-20 05:10:58] INFO: Context column already exists in issues table | User: 1 | IP: 127.0.0.1
+[2025-08-20 05:10:58] INFO: Database migration completed successfully | User: 1 | IP: 127.0.0.1
+[2025-08-20 05:11:38] INFO: Database schema validation passed | User: 1 | IP: 127.0.0.1
