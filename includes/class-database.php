@@ -756,7 +756,7 @@ class SentinelWP_Database {
         $query = $wpdb->prepare(
             "SELECT * FROM $table_notifications 
              WHERE $where_clause 
-             ORDER BY {$filters['order_by']} {$filters['order']} 
+             ORDER BY {$filters['order_by']} {$filters['order']}, id DESC 
              LIMIT %d OFFSET %d",
             array_merge($where_values, array($filters['limit'], $filters['offset']))
         );

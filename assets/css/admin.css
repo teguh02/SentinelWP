@@ -580,6 +580,39 @@
     border-left-color: #dc3232;
 }
 
+/* Notifications Header */
+.notifications-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0 10px 0;
+    border-bottom: 1px solid #e5e5e5;
+    margin-bottom: 20px;
+}
+
+.notifications-header h3 {
+    margin: 0;
+    font-size: 18px;
+    color: #1d2327;
+}
+
+.notifications-ordering {
+    font-size: 12px;
+    color: #646970;
+    font-style: italic;
+    background: #f0f0f1;
+    padding: 4px 8px;
+    border-radius: 3px;
+    position: relative;
+}
+
+.notifications-ordering::before {
+    content: "📅";
+    margin-right: 4px;
+}
+
+/* Notification Items */
+
 /* Security Score */
 .security-score {
     text-align: center;
@@ -894,4 +927,28 @@
     .ai-recommendation-item .recommendation-meta small {
         color: #c9c9c9;
     }
+}
+
+/* Notification timestamp styling */
+.notification-details .timestamp {
+    font-weight: 600;
+    color: #0073aa;
+    background: #f0f6fc;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 11px;
+    cursor: help;
+    border: 1px solid #c5d9ed;
+}
+
+.notification-details .timestamp:hover {
+    background: #e5f3ff;
+    border-color: #0073aa;
+}
+
+/* Sort indicator for timestamp */
+.timestamp::before {
+    content: "🕐";
+    margin-right: 3px;
+    font-size: 10px;
 }

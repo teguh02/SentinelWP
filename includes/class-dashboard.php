@@ -1873,11 +1873,30 @@ class SentinelWP_Dashboard {
         $current_filter = array(
             'status' => sanitize_text_field($_GET['filter_status'] ?? ''),
             'severity' => sanitize_text_field($_GET['filter_severity'] ?? ''),
-            'event_type' => sanitize_text_field($_GET['filter_event_type'] ?? '')
+            'event_type' => sanitize_text_field($_GET['filter_event_type'] ?? ''),
+            'order_by' => 'created_at',
+            'order' => 'DESC',
+            'limit' => 100  // Show more notifications by default
         );
         
-        // Get notifications with filters
+        // Get notifications with filters (latest first)
         $notifications = $database->get_notifications($current_filter);
+        
+        // Additional sort to ensure proper ordering (in case of database inconsistencies)
+        if (!empty($notifications)) {
+            usort($notifications, function($a, $b) {
+                $time_a = strtotime($a->created_at);
+                $time_b = strtotime($b->created_at);
+                
+                // Primary sort: by created_at (newest first)
+                if ($time_b !== $time_a) {
+                    return $time_b - $time_a;
+                }
+                
+                // Secondary sort: by ID (highest first)
+                return (int)$b->id - (int)$a->id;
+            });
+        }
         $notification_counts = $database->get_notification_counts();
         $attack_stats = $attack_detector->get_attack_stats();
         
@@ -1950,6 +1969,10 @@ class SentinelWP_Dashboard {
                         <p><?php _e('Great! No security threats have been detected recently.', 'sentinelwp'); ?></p>
                     </div>
                 <?php else: ?>
+                    <div class="notifications-header">
+                        <h3><?php _e('Security Notifications', 'sentinelwp'); ?></h3>
+                        <span class="notifications-ordering"><?php _e('Showing latest notifications first', 'sentinelwp'); ?></span>
+                    </div>
                     <?php foreach ($notifications as $notification): ?>
                         <?php
                         $severity_class = 'notification-' . $notification->severity;
@@ -1987,7 +2010,9 @@ class SentinelWP_Dashboard {
                                         <?php if ($notification->ip_address && $notification->ip_address !== 'unknown'): ?>
                                         <span class="ip-address">IP: <?php echo esc_html($notification->ip_address); ?></span>
                                         <?php endif; ?>
-                                        <span class="timestamp"><?php echo esc_html(human_time_diff(strtotime($notification->created_at), current_time('timestamp')) . ' ago'); ?></span>
+                                        <span class="timestamp" title="<?php echo esc_attr(date_i18n('F j, Y g:i A', strtotime($notification->created_at))); ?>">
+                                            <?php echo esc_html(human_time_diff(strtotime($notification->created_at), current_time('timestamp')) . ' ago'); ?>
+                                        </span>
                                     </div>
                                 </div>
                                 <div class="notification-actions">

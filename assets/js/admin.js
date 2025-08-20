@@ -727,6 +727,24 @@
                     $btn.prop('disabled', false).text('Delete');
                 }
             });
+        },
+        
+        // Notifications page enhancements
+        initNotificationOrdering: function() {
+            // Add visual indicators to show notifications are ordered by time
+            $('.notification-item').each(function(index) {
+                $(this).attr('data-order', index + 1);
+            });
+            
+            // Add hover tooltip showing exact timestamps
+            $('.timestamp').each(function() {
+                $(this).tooltip({
+                    position: { my: "left+10 center", at: "right center" },
+                    content: function() {
+                        return $(this).attr('title');
+                    }
+                });
+            });
         }
     };
     
@@ -790,6 +808,11 @@
         // Initialize auto refresh if enabled
         if (sentinelwp_ajax.auto_refresh) {
             SentinelWP.initAutoRefresh();
+        }
+        
+        // Notifications page enhancements
+        if ($('.sentinelwp-notifications').length) {
+            this.initNotificationOrdering();
         }
     });
 
